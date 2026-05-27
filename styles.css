@@ -71,9 +71,21 @@
     background-color: #111827;
 }
 [data-theme="black"] .sidebar .nav-item.active {
-    background-color: #27272a;
-    color: #ffffff;
+    background-color: #ffffff !important;
+    color: #000000 !important;
 }
+[data-theme="black"] .sidebar .nav-item.active svg {
+    stroke: #000000 !important;
+}
+
+[data-theme="dark"] .sidebar .nav-item.active {
+    background-color: #ffffff !important;
+    color: #111827 !important;
+}
+[data-theme="dark"] .sidebar .nav-item.active svg {
+    stroke: #111827 !important;
+}
+
 
 /* Theme Selector Styles */
 .theme-selector {
@@ -172,10 +184,17 @@ body {
 }
 
 .nav-item.active {
-    background-color: rgba(255, 255, 255, 0.1);
-    border-left-color: var(--secondary-color);
-    font-weight: 600;
+    background-color: #ffffff !important;
+    color: var(--primary-color) !important;
+    font-weight: 700;
+    border-left: 5px solid var(--accent-color) !important;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
 }
+
+.nav-item.active svg {
+    stroke: var(--primary-color) !important;
+}
+
 
 /* Main Content */
 .main-content {
