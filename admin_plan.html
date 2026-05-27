@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Gestión de Plan de Cuentas - Corporación BEL</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="menu.js"></script>
+    <style>
+        /* Estilos adicionales para el CRUD y Modal */
+        .admin-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+        }
+        .btn-action {
+            padding: 6px 12px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-right: 5px;
+        }
+        .btn-edit {
+            background-color: #3b82f6;
+            color: white;
+        }
+        .btn-edit:hover {
+            background-color: #2563eb;
+        }
+        .btn-toggle {
+            background-color: #f59e0b;
+            color: white;
+        }
+        .btn-toggle:hover {
+            background-color: #d97706;
+        }
+        .btn-toggle.inactive {
+            background-color: #ef4444;
+        }
+        .btn-toggle.inactive:hover {
+            background-color: #dc2626;
+        }
+        
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+        }
+        .modal-header h3 {
+            color: var(--primary-color);
+            font-size: 1.25rem;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-family: inherit;
+        }
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 25px;
+        }
+        .btn-cancel {
+            background: #e5e7eb;
+            color: var(--text-primary);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .badge-active { background: #dcfce7; color: #166534; }
+        .badge-inactive { background: #fee2e2; color: #991b1b; }
+    </style>
+</head>
+<body>
+
+    <!-- Menú Lateral / Sidebar -->
+    <aside class="sidebar" id="sidebar-container"></aside>
+
+    <!-- Contenido Principal -->
+    <main class="main-content">
+        <header class="top-bar" style="display: flex; justify-content: space-between; align-items: center;">
+            <h1 class="page-title">Gestión de Plan de Cuentas</h1>
+            <a href="admin.html" class="btn-cancel" style="text-decoration: none; font-size: 0.9rem;">⬅ Volver al Menú Principal</a>
+        </header>
+
+        <section class="dashboard-panel">
+            <div class="admin-actions">
+                <h3>Listado de Cuentas</h3>
+                <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                    <button id="btn-download-csv" class="btn-cancel" style="font-size: 0.85rem; padding: 8px 15px;">📥 Descargar Plantilla</button>
+                    <input type="file" id="file-csv" accept=".csv" style="display: none;">
+                    <button id="btn-upload-csv" class="btn-primary" style="background-color: #10b981; font-size: 0.85rem; padding: 8px 15px;">⬆️ Subir CSV</button>
+                    <button id="btn-nuevo-plan" class="btn-primary" style="font-size: 0.85rem; padding: 8px 15px;">+ Nueva Cuenta</button>
+                </div>
+            </div>
+            
+            <div class="filters-container" style="display: flex; gap: 15px; align-items: center; margin-bottom: 20px; flex-wrap: wrap;">
+                <div class="filter-group">
+                    <label for="filter-plan" style="font-weight: 500; margin-right: 5px;">Plan:</label>
+                    <select id="filter-plan" class="filter-select" style="min-width: 150px;">
+                        <option value="">Todos</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="filter-grupo" style="font-weight: 500; margin-right: 5px;">Grupo:</label>
+                    <select id="filter-grupo" class="filter-select" style="min-width: 200px;">
+                        <option value="">Todos</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div id="error-message" class="error-message hidden"></div>
+            <div id="loading" class="loading">Cargando plan de cuentas...</div>
+            
+            <div class="table-container">
+                <table class="data-table" style="font-size: 0.8rem;">
+                    <thead>
+                        <tr>
+                            <th>Plan</th>
+                            <th>Cuenta (CTA)</th>
+                            <th>Denominación</th>
+                            <th>Grupo</th>
+                            <th>Subgrupo 1</th>
+                            <th>Subgrupo 2</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body-plan">
+                        <!-- Datos cargados dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal Formulario -->
+    <div id="plan-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">Nueva Cuenta</h3>
+                <button id="btn-close-modal" class="modal-close">&times;</button>
+            </div>
+            <form id="form-plan">
+                <input type="hidden" id="plan-id">
+                
+                <div style="display: flex; gap: 15px;">
+                    <div class="form-group" style="flex: 1;">
+                        <label for="plan-codigo">Plan (Ej. PC01)</label>
+                        <input type="text" id="plan-codigo" required>
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label for="plan-cta">Cuenta (CTA)</label>
+                        <input type="text" id="plan-cta" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="plan-denominacion">Denominación</label>
+                    <input type="text" id="plan-denominacion" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="plan-grupo">Grupo</label>
+                    <input type="text" id="plan-grupo" placeholder="Ej. 4-INGRESOS">
+                </div>
+                
+                <div class="form-group">
+                    <label for="plan-subgrupo1">Subgrupo 1</label>
+                    <input type="text" id="plan-subgrupo1">
+                </div>
+                
+                <div class="form-group">
+                    <label for="plan-subgrupo2">Subgrupo 2</label>
+                    <input type="text" id="plan-subgrupo2">
+                </div>
+                
+                <div class="form-group" style="display: flex; align-items: center; gap: 10px; margin-top: 20px;">
+                    <input type="checkbox" id="plan-activo" checked style="width: auto;">
+                    <label for="plan-activo" style="margin: 0; cursor: pointer;">Cuenta Activa</label>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" id="btn-cancel-modal" class="btn-cancel">Cancelar</button>
+                    <button type="submit" class="btn-primary" id="btn-save-modal">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="admin_plan.js"></script>
+</body>
+</html>

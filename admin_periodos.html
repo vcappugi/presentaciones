@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Gestión de Periodos - Corporación BEL</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="menu.js"></script>
+    <style>
+        /* Estilos adicionales para el CRUD y Modal */
+        .admin-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+        }
+        .btn-action {
+            padding: 6px 12px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-right: 5px;
+        }
+        .btn-toggle {
+            background-color: #10b981; /* Verde para abrir */
+            color: white;
+        }
+        .btn-toggle:hover {
+            background-color: #059669;
+        }
+        .btn-toggle.closed {
+            background-color: #ef4444; /* Rojo para cerrar */
+        }
+        .btn-toggle.closed:hover {
+            background-color: #dc2626;
+        }
+        
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+        }
+        .modal-header h3 {
+            color: var(--primary-color);
+            font-size: 1.25rem;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-family: inherit;
+        }
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 25px;
+        }
+        .btn-cancel {
+            background: #e5e7eb;
+            color: var(--text-primary);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .badge-open { background: #dcfce7; color: #166534; }
+        .badge-closed { background: #fee2e2; color: #991b1b; }
+    </style>
+</head>
+<body>
+
+    <!-- Menú Lateral / Sidebar -->
+    <aside class="sidebar" id="sidebar-container"></aside>
+
+    <!-- Contenido Principal -->
+    <main class="main-content">
+        <header class="top-bar" style="display: flex; justify-content: space-between; align-items: center;">
+            <h1 class="page-title">Gestión de Periodos</h1>
+            <a href="admin.html" class="btn-cancel" style="text-decoration: none; font-size: 0.9rem;">⬅ Volver al Menú Principal</a>
+        </header>
+
+        <section class="dashboard-panel">
+            <div class="admin-actions">
+                <h3>Listado de Periodos</h3>
+                <button id="btn-nuevo-periodo" class="btn-primary">+ Nuevo Periodo</button>
+            </div>
+            
+            <div id="error-message" class="error-message hidden"></div>
+            <div id="loading" class="loading">Cargando periodos...</div>
+            
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Periodo</th>
+                            <th>Estado de Cierre</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body-periodos">
+                        <!-- Datos cargados dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal Formulario -->
+    <div id="periodo-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">Nuevo Periodo</h3>
+                <button id="btn-close-modal" class="modal-close">&times;</button>
+            </div>
+            <form id="form-periodo">
+                <div class="form-group">
+                    <label for="periodo-nombre">Nombre del Periodo (Ej. ene-26)</label>
+                    <input type="text" id="periodo-nombre" required placeholder="mmm-yy">
+                </div>
+                
+                <div class="form-group">
+                    <label for="periodo-estado">Estado Inicial</label>
+                    <select id="periodo-estado" required>
+                        <option value="Periodo Abierto">Periodo Abierto</option>
+                        <option value="Periodo Cerrado">Periodo Cerrado</option>
+                    </select>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" id="btn-cancel-modal" class="btn-cancel">Cancelar</button>
+                    <button type="submit" class="btn-primary" id="btn-save-modal">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="admin_periodos.js"></script>
+</body>
+</html>

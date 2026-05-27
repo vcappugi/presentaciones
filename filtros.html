@@ -1,0 +1,35 @@
+<div class="row g-2 align-items-center bg-light p-2 rounded border shadow-sm filters-container">
+    <div class="col-12 col-md-auto filter-group">
+        <div class="d-flex align-items-center">
+            <label for="select-empresa" class="form-label me-2 mb-0 fw-semibold text-dark text-nowrap" style="font-size: 0.85rem;">Empresa:</label>
+            <select id="select-empresa" class="form-select form-select-sm" style="min-width: 150px;">
+                <option value="">Cargando...</option>
+            </select>
+        </div>
+    </div>
+    
+    <div class="col-12 col-md-auto filter-group">
+        <div class="d-flex align-items-center">
+            <label for="select-periodo" class="form-label me-2 mb-0 fw-semibold text-dark text-nowrap" style="font-size: 0.85rem;">Periodo:</label>
+            <select id="select-periodo" class="form-select form-select-sm" style="min-width: 120px;">
+                <option value="">Cargando...</option>
+            </select>
+        </div>
+    </div>
+    
+    <div class="col-12 col-md-auto filter-group">
+        <div class="d-flex align-items-center">
+            <label for="select-dimension" class="form-label me-2 mb-0 fw-semibold text-dark text-nowrap" style="font-size: 0.85rem;">Dimensión:</label>
+            <select id="select-dimension" class="form-select form-select-sm" style="min-width: 125px;">
+                <option value="REAL" selected>REAL</option>
+                <option value="PRESUPUESTO">PRESUPUESTO</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="col-12 col-md-auto">
+        <button id="btn-consultar" class="btn btn-sm btn-success fw-bold w-100" style="background-color: var(--primary-color); border-color: var(--primary-color); padding: 5px 15px;">
+            Consultar Reporte
+        </button>
+    </div>
+</div>

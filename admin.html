@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Menú Administrativo - Corporación BEL</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="menu.js"></script>
+    <style>
+        .admin-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
+        }
+        .admin-card {
+            background: var(--surface-color);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+            border: 2px solid transparent;
+            cursor: pointer;
+        }
+        .admin-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            border-color: var(--primary-color);
+        }
+        .admin-card-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+        }
+        .admin-card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+        .admin-card-desc {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Menú Lateral / Sidebar -->
+    <aside class="sidebar" id="sidebar-container"></aside>
+
+    <!-- Contenido Principal -->
+    <main class="main-content">
+        <header class="top-bar">
+            <h1 class="page-title">Panel Administrativo Central</h1>
+        </header>
+
+        <section class="dashboard-panel" style="background: transparent; box-shadow: none; padding: 0;">
+            <div class="panel-header" style="border: none; margin-bottom: 10px;">
+                <h3 style="font-size: 1.4rem;">Módulos de Configuración</h3>
+                <p style="color: var(--text-secondary); margin-top: 5px;">Selecciona el módulo administrativo que deseas gestionar.</p>
+            </div>
+            
+            <div class="admin-grid">
+                <!-- Tarjeta 1: Empresas -->
+                <a href="admin_empresas.html" class="admin-card">
+                    <div class="admin-card-icon">🏢</div>
+                    <div class="admin-card-title">Gestión de Empresas</div>
+                    <div class="admin-card-desc">
+                        Crea, edita y administra los datos de las empresas registradas en la corporación (administradores, direcciones, planes).
+                    </div>
+                </a>
+
+                <!-- Tarjeta 2: Plan de Cuentas -->
+                <a href="admin_plan.html" class="admin-card">
+                    <div class="admin-card-icon">📋</div>
+                    <div class="admin-card-title">Gestión de Plan de Cuentas</div>
+                    <div class="admin-card-desc">
+                        Gestiona el catálogo de cuentas contables, grupos y denominaciones. Agrega nuevas cuentas y desactívalas cuando sea necesario.
+                    </div>
+                </a>
+
+                <!-- Espacio para futuras opciones -->
+                <!-- Tarjeta 3: Periodos -->
+                <a href="admin_periodos.html" class="admin-card">
+                    <div class="admin-card-icon">📅</div>
+                    <div class="admin-card-title">Gestión de Periodos</div>
+                    <div class="admin-card-desc">
+                        Gestiona los meses y el estado de cierre. Cerrar un periodo actualizará todos sus registros asociados.
+                    </div>
+                </a>
+
+                <!-- Tarjeta 4: Conceptos CT -->
+                <a href="admin_conceptosct.html" class="admin-card">
+                    <div class="admin-card-icon">🏷️</div>
+                    <div class="admin-card-title">Conceptos CT</div>
+                    <div class="admin-card-desc">
+                        Administra los conceptos (Caja, Banco, etc.) y su orden para el cálculo del Capital de Trabajo.
+                    </div>
+                </a>
+
+                <!-- Tarjeta 5: Análisis Financiero con IA -->
+                <a href="admin_ia.html" class="admin-card">
+                    <div class="admin-card-icon">🤖</div>
+                    <div class="admin-card-title">Análisis Financiero con IA</div>
+                    <div class="admin-card-desc">
+                        Interactúa con un asistente contable avanzado impulsado por Gemini para hacer preguntas en lenguaje natural sobre las cifras de la base de datos de Supabase.
+                    </div>
+                </a>
+
+                <div class="admin-card" style="opacity: 0.6; cursor: not-allowed;" title="Próximamente">
+                    <div class="admin-card-icon">👥</div>
+                    <div class="admin-card-title">Gestión de Usuarios</div>
+                    <div class="admin-card-desc">
+                        (Próximamente) Control de roles, permisos y accesos al sistema para el personal.
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+</body>
+</html>

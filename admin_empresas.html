@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Panel Administrativo - Corporación BEL</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="menu.js"></script>
+    <style>
+        /* Estilos adicionales para el CRUD y Modal */
+        .admin-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+        }
+        .btn-action {
+            padding: 6px 12px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        .btn-edit {
+            background-color: #3b82f6;
+            color: white;
+        }
+        .btn-edit:hover {
+            background-color: #2563eb;
+        }
+        
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+        }
+        .modal-header h3 {
+            color: var(--primary-color);
+            font-size: 1.25rem;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-family: inherit;
+        }
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 25px;
+        }
+        .btn-cancel {
+            background: #e5e7eb;
+            color: var(--text-primary);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Menú Lateral / Sidebar -->
+    <aside class="sidebar" id="sidebar-container"></aside>
+
+    <!-- Contenido Principal -->
+    <main class="main-content">
+        <header class="top-bar" style="display: flex; justify-content: space-between; align-items: center;">
+            <h1 class="page-title">Gestión de Empresas</h1>
+            <a href="admin.html" class="btn-cancel" style="text-decoration: none; font-size: 0.9rem;">⬅ Volver al Menú Principal</a>
+        </header>
+
+        <section class="dashboard-panel">
+            <div class="admin-actions">
+                <h3>Listado de Empresas</h3>
+                <button id="btn-nueva-empresa" class="btn-primary">+ Nueva Empresa</button>
+            </div>
+            
+            <div id="error-message" class="error-message hidden"></div>
+            <div id="loading" class="loading">Cargando empresas...</div>
+            
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Administrador</th>
+                            <th>Plan</th>
+                            <th>Teléfono</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body-empresas">
+                        <!-- Datos cargados dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal Formulario -->
+    <div id="empresa-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">Nueva Empresa</h3>
+                <button id="btn-close-modal" class="modal-close">&times;</button>
+            </div>
+            <form id="form-empresa">
+                <input type="hidden" id="empresa-id">
+                
+                <div class="form-group">
+                    <label for="empresa-nombre">Nombre</label>
+                    <input type="text" id="empresa-nombre" required>
+                </div>
+                <div class="form-group">
+                    <label for="empresa-admin">Administrador</label>
+                    <input type="text" id="empresa-admin">
+                </div>
+                <div class="form-group">
+                    <label for="empresa-direccion">Dirección</label>
+                    <input type="text" id="empresa-direccion">
+                </div>
+                <div class="form-group">
+                    <label for="empresa-mail">Correo Electrónico</label>
+                    <input type="email" id="empresa-mail">
+                </div>
+                <div class="form-group">
+                    <label for="empresa-plan">Plan</label>
+                    <input type="text" id="empresa-plan">
+                </div>
+                <div class="form-group">
+                    <label for="empresa-telefono">Teléfono</label>
+                    <input type="text" id="empresa-telefono">
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" id="btn-cancel-modal" class="btn-cancel">Cancelar</button>
+                    <button type="submit" class="btn-primary" id="btn-save-modal">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="admin_empresas.js"></script>
+</body>
+</html>

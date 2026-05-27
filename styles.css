@@ -1,0 +1,547 @@
+@import url('https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css');
+
+:root {
+    --primary-color: rgb(74, 160, 68); /* Color corporativo verde */
+    --secondary-color: #1d4ed8; /* Azul más vibrante para interacciones */
+    --accent-color: #f59e0b; /* Acento para resaltar, ej: dorado/naranja */
+    --bg-color: #f3f4f6; /* Fondo gris claro */
+    --surface-color: #ffffff; /* Fondo de tarjetas */
+    --text-primary: #1f2937;
+    --text-secondary: #4b5563;
+    --border-color: #e5e7eb;
+    
+    /* Variables para filas de tablas anidadas (GyP) */
+    --row-g-bg: #e2e8f0;
+    --row-sg2-bg: #f1f5f9;
+    --row-sg-bg: #f8fafc;
+    
+    --sidebar-width: 250px;
+}
+
+[data-theme="blue"] {
+    --primary-color: #2563eb;
+    --secondary-color: #3b82f6;
+    --accent-color: #f59e0b;
+    --bg-color: #f0f9ff;
+    --surface-color: #ffffff;
+    --text-primary: #0f172a;
+    --text-secondary: #334155;
+    --border-color: #e2e8f0;
+    --row-g-bg: #e0f2fe;
+    --row-sg2-bg: #f0f9ff;
+    --row-sg-bg: #f8fafc;
+}
+
+[data-theme="dark"] {
+    --primary-color: #10b981;
+    --secondary-color: #3b82f6;
+    --accent-color: #f59e0b;
+    --bg-color: #111827;
+    --surface-color: #1f2937;
+    --text-primary: #f9fafb;
+    --text-secondary: #9ca3af;
+    --border-color: #374151;
+    --row-g-bg: #374151;
+    --row-sg2-bg: #1f2937;
+    --row-sg-bg: #111827;
+}
+
+[data-theme="black"] {
+    --primary-color: #ffffff;
+    --secondary-color: #a1a1aa;
+    --accent-color: #fbbf24;
+    --bg-color: #000000;
+    --surface-color: #09090b;
+    --text-primary: #ffffff;
+    --text-secondary: #a1a1aa;
+    --border-color: #27272a;
+    --row-g-bg: #27272a;
+    --row-sg2-bg: #18181b;
+    --row-sg-bg: #09090b;
+}
+
+/* Modificaciones especificas para temas oscuros */
+[data-theme="dark"] .sidebar, [data-theme="black"] .sidebar {
+    border-right: 1px solid var(--border-color);
+}
+[data-theme="black"] .sidebar {
+    background-color: #000000;
+}
+[data-theme="dark"] .sidebar {
+    background-color: #111827;
+}
+[data-theme="black"] .sidebar .nav-item.active {
+    background-color: #27272a;
+    color: #ffffff;
+}
+
+/* Theme Selector Styles */
+.theme-selector {
+    padding: 20px 24px;
+    margin-top: auto;
+    border-top: 1px solid rgba(255,255,255,0.1);
+}
+.theme-selector-title {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+    opacity: 0.7;
+}
+.theme-buttons {
+    display: flex;
+    gap: 8px;
+}
+.theme-btn {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+.theme-btn:hover {
+    transform: scale(1.2);
+}
+.theme-btn.active {
+    border-color: white;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.3);
+}
+.theme-light { background-color: rgb(74, 160, 68); }
+.theme-blue { background-color: #2563eb; }
+.theme-dark { background-color: #111827; border: 1px solid #374151; }
+.theme-black { background-color: #000000; border: 1px solid #27272a; }
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Sidebar */
+.sidebar {
+    width: var(--sidebar-width);
+    background-color: var(--primary-color);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    height: 100vh;
+    box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+    transition: transform 0.3s ease;
+}
+
+.sidebar-header {
+    padding: 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    text-align: center;
+}
+
+.sidebar-header h2 {
+    font-weight: 700;
+    font-size: 1.5rem;
+    letter-spacing: 1px;
+}
+
+.sidebar-nav {
+    flex: 1;
+    padding: 20px 0;
+}
+
+.nav-item {
+    padding: 15px 24px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    border-left: 4px solid transparent;
+}
+
+.nav-item:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-left-color: var(--accent-color);
+}
+
+.nav-item.active {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-left-color: var(--secondary-color);
+    font-weight: 600;
+}
+
+/* Main Content */
+.main-content {
+    flex: 1;
+    margin-left: var(--sidebar-width);
+    padding: 30px 40px;
+    display: flex;
+    flex-direction: column;
+    transition: margin-left 0.3s ease;
+}
+
+/* Collapsed state for Desktop */
+body.sidebar-collapsed .sidebar {
+    transform: translateX(-100%);
+}
+
+body.sidebar-collapsed .main-content {
+    margin-left: 0;
+}
+
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    background: var(--surface-color);
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+}
+
+.page-title {
+    font-size: 1.8rem;
+    color: var(--primary-color);
+    font-weight: 700;
+}
+
+.filters-container {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.filter-group label {
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.filter-select {
+    padding: 10px 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    outline: none;
+    font-size: 1rem;
+    color: var(--text-primary);
+    background-color: var(--surface-color);
+    cursor: pointer;
+    transition: border-color 0.3s ease;
+}
+
+.filter-select:focus {
+    border-color: var(--secondary-color);
+}
+
+/* Dashboard Cards */
+.dashboard-panel {
+    background: var(--surface-color);
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+    flex: 1;
+}
+
+.panel-header {
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.panel-header h3 {
+    color: var(--primary-color);
+    font-size: 1.25rem;
+}
+
+/* Table Styles */
+.table-container {
+    overflow-x: auto;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 600px;
+}
+
+.data-table th, .data-table td {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.data-table th {
+    background-color: var(--bg-color);
+    color: var(--text-secondary);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+}
+
+
+.data-table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.data-table tbody tr:hover {
+    background-color: var(--row-sg-bg);
+}
+
+/* Loading & Empty States */
+.loading {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+.error-message {
+    background-color: #fee2e2;
+    color: #b91c1c;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border: 1px solid #f87171;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* =========================================
+   Responsive & Mobile Layout
+   ========================================= */
+
+/* Hamburger Button */
+.menu-toggle {
+    display: block;
+    background: none;
+    border: none;
+    color: var(--primary-color);
+    font-size: 1.8rem;
+    cursor: pointer;
+    margin-right: 15px;
+}
+
+/* Overlay for mobile sidebar */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 5;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.sidebar-overlay.active {
+    display: block;
+    opacity: 1;
+}
+
+/* Media Queries for screens smaller than 768px */
+@media (max-width: 768px) {
+    html, body {
+        overflow-x: hidden !important;
+        width: 100% !important;
+        max-width: 100vw !important;
+    }
+
+    .menu-toggle {
+        display: block;
+    }
+
+    .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+    }
+
+    .sidebar.open {
+        transform: translateX(0);
+    }
+
+    .main-content {
+        margin-left: 0 !important;
+        padding: 10px !important;
+        width: 100% !important;
+        max-width: 100vw !important;
+        overflow-x: hidden !important;
+        box-sizing: border-box !important;
+    }
+
+    .top-bar {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 15px;
+    }
+
+    .page-title {
+        display: flex;
+        align-items: center;
+        font-size: 1.4rem;
+        margin-bottom: 10px;
+    }
+
+    .filters-container {
+        width: 100% !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 10px !important;
+        margin-top: 15px !important;
+    }
+
+    .filter-group {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 5px !important;
+        width: 100% !important;
+    }
+    
+    .filter-group select, 
+    .filter-group input, 
+    .filter-group button {
+        width: 100%;
+    }
+
+    /* Summary cards wrapping */
+    .summary-cards {
+        flex-direction: column;
+        gap: 15px !important;
+    }
+
+    .summary-card {
+        margin-bottom: 0;
+        width: 100% !important;
+    }
+
+    /* Ajustar las tablas para que quepan completamente en pantallas móviles */
+    .data-table {
+        min-width: auto !important;
+        width: 100% !important;
+        table-layout: auto !important; /* Ajuste automático natural de columnas */
+    }
+
+    /* Rellenos y fuentes sumamente compactos pero legibles en móviles */
+    .data-table th, .data-table td {
+        padding: 6px 4px !important;
+        font-size: 0.75rem !important;
+        white-space: nowrap !important; /* Evitar que los números se rompan en dos líneas */
+    }
+    
+    .data-table th {
+        font-size: 0.70rem !important;
+        padding: 6px 4px !important;
+        white-space: normal !important; /* Permitir que los encabezados largos bajen de línea */
+    }
+    
+    /* El primer elemento (Denominación) en tablas */
+    .data-table td:first-child, .data-table th:first-child {
+        font-size: 0.75rem !important;
+        width: 32% !important; /* Reservar buen espacio proporcional para nombres */
+        min-width: 90px !important;
+        word-break: break-word !important;
+        white-space: normal !important; /* Permitir saltos de línea naturales */
+        text-align: left !important;
+    }
+    
+    /* Ajustes específicos para las cabeceras sticky en móvil */
+    .data-table td[style*="position: sticky"], 
+    .data-table th[style*="position: sticky"] {
+        padding-left: 4px !important;
+        position: static !important; /* Desactivar sticky en móvil para evitar superposiciones feas */
+        background-color: transparent !important;
+    }
+
+    /* OCULTAR COLUMNAS MENOS IMPORTANTES EN MÓVIL PARA QUE LA TABLA QUEPA AL 100% */
+
+    /* 1. Tabla de Ranking de Inicio: Ocultar Costos, Gastos y Otros Netos */
+    #table-section .data-table th:nth-child(3),
+    #table-section .data-table td:nth-child(3),
+    #table-section .data-table th:nth-child(4),
+    #table-section .data-table td:nth-child(4),
+    #table-section .data-table th:nth-child(5),
+    #table-section .data-table td:nth-child(5) {
+        display: none !important;
+    }
+
+    /* 2. Ocultar Tendencia (Minigráficos) en todas las tablas comparativas e históricas */
+    /* El sparkline/tendencia es la 4ta columna en comparativo e histórico */
+    .data-table th:nth-child(4), .data-table td:nth-child(4) {
+        display: none !important;
+    }
+    
+    /* Contenedores de scroll de tabla */
+    .table-container {
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        overflow-x: auto !important; /* Permitir scroll solo si es ultra necesario, pero la tabla intentará caber */
+        background-color: var(--surface-color);
+        min-width: 0 !important; /* Soluciona el desbordamiento de Flexbox */
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+    
+    /* Paneles del Dashboard */
+    .dashboard-panel {
+        padding: 12px !important;
+        margin-bottom: 20px;
+        min-width: 0 !important; /* Soluciona el desbordamiento de Flexbox */
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+    
+    /* Ajustes de gráficos para no desbordar en móvil */
+    .dashboard-grid {
+        grid-template-columns: 1fr !important;
+        gap: 15px !important;
+    }
+    
+    /* Reducir títulos de páginas */
+    .page-title {
+        font-size: 1.4rem !important;
+    }
+
+    /* Ajuste para contenedores de filtros personalizados (comparativo y histórico) */
+    #filtros-comparativo-container, 
+    #filtros-historico-container {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        width: 100% !important;
+        gap: 10px !important;
+    }
+    
+    #filtros-comparativo-container .filter-group,
+    #filtros-historico-container .filter-group {
+        flex-direction: column !important;
+        align-items: stretch !important;
+    }
+    
+    #filtros-comparativo-container select,
+    #filtros-historico-container select,
+    #filtros-comparativo-container button,
+    #filtros-historico-container button {
+        width: 100% !important;
+    }
+}
+
+
+

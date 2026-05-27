@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>GyP Comparativo de Mes - Dashboard Corporativo</title>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Estilos CSS (incluye Bootstrap 5 importado al inicio) -->
+    <link rel="stylesheet" href="styles.css">
+    <script src="menu.js"></script>
+    <!-- Chart.js para gráficos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .sparkline-svg {
+            display: inline-block;
+            vertical-align: middle;
+            width: 50px;
+            height: 25px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            stroke: var(--primary-color);
+            fill: none;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            color: var(--primary-color);
+        }
+        .sparkline-svg:hover {
+            transform: scale(1.1);
+            stroke: var(--secondary-color);
+            color: var(--secondary-color);
+        }
+        .sparkline-svg circle {
+            fill: currentColor;
+            transition: fill 0.2s;
+        }
+        .card {
+            background-color: var(--surface-color) !important;
+            border-color: var(--border-color) !important;
+        }
+        .text-dark {
+            color: var(--text-primary) !important;
+        }
+        .text-muted {
+            color: var(--text-secondary) !important;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Menú Lateral / Sidebar -->
+    <aside class="sidebar" id="sidebar-container"></aside>
+
+    <!-- Contenido Principal -->
+    <main class="main-content">
+        <!-- Barra Superior -->
+        <header class="top-bar d-flex flex-wrap justify-content-between align-items-center mb-4 pb-3 border-bottom">
+            <h1 class="page-title h3 fw-bold mb-0 text-dark">Comparativo de Ganancias y Pérdidas <span class="fs-6 text-muted font-monospace fw-normal">(Expresado en MM $)</span></h1>
+            
+            <!-- Filtros personalizados para 2 periodos usando Bootstrap 5 -->
+            <div id="filtros-comparativo-container" class="row g-2 align-items-center bg-light p-2 rounded border shadow-sm mt-2 mt-md-0" style="margin-top: 10px;">
+                <div class="col-12 col-md-auto filter-group">
+                    <div class="d-flex align-items-center">
+                        <label for="select-empresa" class="form-label me-2 mb-0 fw-semibold text-dark text-nowrap" style="font-size: 0.85rem;">Empresa:</label>
+                        <select id="select-empresa" class="form-select form-select-sm" style="min-width: 150px;">
+                            <option value="">Cargando...</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="col-12 col-md-auto filter-group">
+                    <div class="d-flex align-items-center">
+                        <label for="select-periodo1" class="form-label me-2 mb-0 fw-semibold text-dark text-nowrap" style="font-size: 0.85rem;">Periodo 1:</label>
+                        <select id="select-periodo1" class="form-select form-select-sm" style="min-width: 110px;">
+                            <option value="">Cargando...</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-auto filter-group">
+                    <div class="d-flex align-items-center">
+                        <label for="select-periodo2" class="form-label me-2 mb-0 fw-semibold text-dark text-nowrap" style="font-size: 0.85rem;">Periodo 2:</label>
+                        <select id="select-periodo2" class="form-select form-select-sm" style="min-width: 110px;">
+                            <option value="">Cargando...</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="col-12 col-md-auto filter-group">
+                    <div class="d-flex align-items-center">
+                        <label for="select-dimension" class="form-label me-2 mb-0 fw-semibold text-dark text-nowrap" style="font-size: 0.85rem;">Dimensión:</label>
+                        <select id="select-dimension" class="form-select form-select-sm" style="min-width: 120px;">
+                            <option value="REAL" selected>REAL</option>
+                            <option value="PRESUPUESTO">PRESUPUESTO</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-auto">
+                    <button id="btn-consultar-comparativo" class="btn btn-sm btn-success fw-bold w-100" style="background-color: var(--primary-color); border-color: var(--primary-color); padding: 5px 15px;">
+                        Consultar Reporte
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Tarjetas de Resumen usando Bootstrap Grid -->
+        <div class="row g-3 mb-4" id="summary-cards" style="display: none;">
+            <div class="col-12 col-md-4">
+                <div class="card h-100 shadow-sm border-0 border-start border-primary border-4">
+                    <div class="card-body p-3">
+                        <div class="text-uppercase text-muted small fw-bold mb-1" style="letter-spacing: 0.5px;">Resultado Neto (Periodo 1)</div>
+                        <div class="fs-4 fw-bold text-dark" id="card-rn-p1">0,00</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-4">
+                <div class="card h-100 shadow-sm border-0 border-start border-success border-4">
+                    <div class="card-body p-3">
+                        <div class="text-uppercase text-muted small fw-bold mb-1" style="letter-spacing: 0.5px;">Resultado Neto (Periodo 2)</div>
+                        <div class="fs-4 fw-bold" id="card-rn-p2" style="color: var(--primary-color);">0,00</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-4">
+                <div class="card h-100 shadow-sm border-0 border-start border-warning border-4" style="border-left-color: var(--secondary-color) !important;">
+                    <div class="card-body p-3">
+                        <div class="text-uppercase text-muted small fw-bold mb-1" style="letter-spacing: 0.5px;">Variación</div>
+                        <div class="fs-4 fw-bold" id="card-variacion" style="color: var(--secondary-color);">0,00 %</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel de Datos -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-transparent border-bottom pt-3">
+                <h3 class="card-title h6 fw-bold mb-0 text-dark">Detalle de Ganancias y Pérdidas <span class="fs-6 text-muted font-monospace fw-normal">(Expresado en MM $)</span></h3>
+            </div>
+            
+            <div class="card-body p-0">
+                <!-- Mensajes de Estado -->
+                <div id="error-message" class="alert alert-danger m-3 hidden" role="alert"></div>
+                <div id="loading" class="alert alert-info text-center m-3" role="alert" style="display: none;">
+                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                    Consultando datos en Supabase...
+                </div>
+                
+                <!-- Tabla de Datos con Contenedor Responsivo Oficial de Bootstrap -->
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0" style="min-width: 600px;">
+                        <thead>
+                            <tr id="table-header">
+                                <!-- Las cabeceras se generarán dinámicamente -->
+                            </tr>
+                        </thead>
+                        <tbody id="table-body" class="border-top-0">
+                            <!-- Los datos se insertarán aquí dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Bootstrap 5 JS Bundle via CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Configuración y Lógica de la Aplicación -->
+    <script src="config.js"></script>
+    <script src="gyp_comparativo.js"></script>
+</body>
+</html>
