@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const renderTable = (data) => {
         tableBody.innerHTML = '';
         if (data.length === 0) {
-            tableBody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 20px; color: var(--text-secondary);">No hay conceptos de flujo de caja registrados.</td></tr>';
+            tableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px; color: var(--text-secondary);">No hay conceptos de flujo de caja registrados.</td></tr>';
             return;
         }
 
@@ -73,8 +73,11 @@ document.addEventListener('DOMContentLoaded', () => {
                         ${item.clase || ''}
                     </span>
                 </td>
+                <td class="text-muted" style="font-size: 0.9rem;">${item.grupo || '-'}</td>
+                <td class="text-muted" style="font-size: 0.9rem;">${item.subgrupo1 || '-'}</td>
+                <td class="text-muted" style="font-size: 0.9rem;">${item.subgrupo2 || '-'}</td>
                 <td style="text-align: center;">
-                    <button class="action-btn btn-edit" title="Editar" data-id="${item.id}" data-orden="${item.orden || ''}" data-denominacion="${item.denominacion || ''}" data-clase="${item.clase || ''}">✏️ Editar</button>
+                    <button class="action-btn btn-edit" title="Editar" data-id="${item.id}" data-orden="${item.orden || ''}" data-denominacion="${item.denominacion || ''}" data-clase="${item.clase || ''}" data-grupo="${item.grupo || ''}" data-subgrupo1="${item.subgrupo1 || ''}" data-subgrupo2="${item.subgrupo2 || ''}">✏️ Editar</button>
                 </td>
             `;
             tableBody.appendChild(tr);
@@ -88,6 +91,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('form-orden').value = target.dataset.orden;
                 document.getElementById('form-denominacion').value = target.dataset.denominacion;
                 document.getElementById('form-clase').value = target.dataset.clase;
+                document.getElementById('form-grupo').value = target.dataset.grupo;
+                document.getElementById('form-subgrupo1').value = target.dataset.subgrupo1;
+                document.getElementById('form-subgrupo2').value = target.dataset.subgrupo2;
                 modalTitle.textContent = 'Editar Concepto Flujo de Caja';
                 modal.classList.add('active');
             });
@@ -101,11 +107,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const orden = document.getElementById('form-orden').value;
         const denominacion = document.getElementById('form-denominacion').value.toUpperCase();
         const clase = document.getElementById('form-clase').value;
+        const grupo = document.getElementById('form-grupo').value.trim().toUpperCase();
+        const subgrupo1 = document.getElementById('form-subgrupo1').value.trim().toUpperCase();
+        const subgrupo2 = document.getElementById('form-subgrupo2').value.trim().toUpperCase();
 
         const payload = {
             orden: parseInt(orden),
             denominacion: denominacion,
-            clase: clase
+            clase: clase,
+            grupo: grupo || null,
+            subgrupo1: subgrupo1 || null,
+            subgrupo2: subgrupo2 || null
         };
 
         try {
