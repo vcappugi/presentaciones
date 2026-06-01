@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         header.nextElementSibling.style.display = 'block';
                         header.querySelector('.collapsible-icon').style.transform = 'rotate(90deg)';
                     }
-                } else if (page === 'admin.html' || page === 'admin_empresas.html' || page === 'admin_plan.html' || page === 'admin_periodos.html' || page === 'admin_conceptosct.html' || page === 'admin_ia.html') {
+                } else if (page === 'admin.html' || page === 'admin_empresas.html' || page === 'admin_plan.html' || page === 'admin_periodos.html' || page === 'admin_conceptosct.html' || page === 'admin_conceptosfc.html' || page === 'admin_ia.html') {
                     document.getElementById('nav-admin')?.classList.add('active');
                 }
 
