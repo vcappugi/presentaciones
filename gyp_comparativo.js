@@ -467,11 +467,25 @@ function renderTable(data, mesesOrdenados) {
     // Cálculos globales
     const utilidadBrutaAcumulada = totalIngresos - totalCostos;
 
+    // Helper para ordenar grupos
+    const getGroupOrder = (name) => {
+        const n = String(name).toUpperCase();
+        if (n.includes('INGRESO') && !n.includes('OTROS')) return 1;
+        if (n.includes('COSTO') && !n.includes('OTROS')) return 2;
+        if (n.includes('GASTO') && !n.includes('OTROS')) return 3;
+        if (n.includes('OTROS INGRESOS')) return 4;
+        if (n.includes('OTROS EGRESOS')) return 5;
+        return 99;
+    };
+
     // Renderizar
     let gIndex = 0;
     let hasRenderedUtilidadBruta = false;
     let hasRenderedResultadoOperativo = false;
-    for (const [gName, gData] of Object.entries(agrupado)) {
+    
+    const sortedGroupKeys = Object.keys(agrupado).sort((a, b) => getGroupOrder(a) - getGroupOrder(b));
+    for (const gName of sortedGroupKeys) {
+        const gData = agrupado[gName];
         gIndex++;
         const gId = `g${gIndex}`;
 
@@ -578,8 +592,12 @@ function renderTable(data, mesesOrdenados) {
                 makeCollapsible(trSg2, sg2Id);
                 tableBody.appendChild(trSg2);
 
-                // Filas de datos
-                Object.values(sg2Data.items).forEach(item => {
+                // Filas de datos ordenadas por número de cuenta (cta)
+                Object.values(sg2Data.items).sort((a, b) => {
+                    const ctaA = String(a.cta || '').trim();
+                    const ctaB = String(b.cta || '').trim();
+                    return ctaA.localeCompare(ctaB, undefined, { numeric: true, sensitivity: 'base' });
+                }).forEach(item => {
                     const trItem = document.createElement('tr');
                     trItem.setAttribute('data-parent-ids', `${gId} ${sg1Id} ${sg2Id}`);
                     
