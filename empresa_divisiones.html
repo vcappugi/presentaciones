@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Empresa 1 - Dashboard Corporativo</title>
+    <title>Empresa por Divisiones - Dashboard Corporativo</title>
     <!-- Google Fonts: Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Estilos CSS -->
@@ -11,6 +11,32 @@
     <script src="menu.js"></script>
     <!-- Google Charts para gráficos 3D -->
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <style>
+        /* Estilos adicionales para soportar columnas múltiples de divisiones de forma responsive */
+        .table-container {
+            overflow-x: auto;
+            width: 100%;
+        }
+        .data-table {
+            min-width: 1000px; /* Asegurar espacio suficiente para divisiones */
+        }
+        .btn-toggle-view {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-decoration: none;
+            transition: background-color 0.2s;
+        }
+        .btn-toggle-view:hover {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+    </style>
 </head>
 <body>
 
@@ -21,18 +47,18 @@
     <main class="main-content">
         <!-- Barra Superior -->
         <header class="top-bar" style="flex-wrap: wrap;">
-            <h1 class="page-title">Dashboard <span style="font-size: 1rem; color: var(--text-secondary); font-weight: normal; font-family: monospace;">(Expresado en MM $)</span></h1>
+            <h1 class="page-title">Dashboard Divisiones <span style="font-size: 1rem; color: var(--text-secondary); font-weight: normal; font-family: monospace;">(Expresado en MM $)</span></h1>
             <div id="filtros-container"></div>
         </header>
 
         <!-- Tarjetas de Resumen -->
         <div class="summary-cards" id="summary-cards" style="display: none; gap: 20px; margin-bottom: 25px;">
             <div class="summary-card" style="flex: 1; background: var(--surface-color); border-radius: 12px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border-left: 4px solid var(--primary-color);">
-                <div class="card-title" style="font-size: 0.9rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; margin-bottom: 10px;">Resultado Neto</div>
+                <div class="card-title" style="font-size: 0.9rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; margin-bottom: 10px;">Resultado Neto Total</div>
                 <div class="card-value" id="card-total-gyp" style="font-size: 1.8rem; font-weight: 700; color: var(--primary-color);">0,00</div>
             </div>
             <div class="summary-card accent" style="flex: 1; background: var(--surface-color); border-radius: 12px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border-left: 4px solid var(--accent-color);">
-                <div class="card-title" style="font-size: 0.9rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; margin-bottom: 10px;">Margen de Utilidad Neta</div>
+                <div class="card-title" style="font-size: 0.9rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; margin-bottom: 10px;">Margen de Utilidad Neta Consolidado</div>
                 <div class="card-value" id="card-porcentaje-ingresos" style="font-size: 1.8rem; font-weight: 700; color: var(--primary-color);">0,00 %</div>
             </div>
         </div>
@@ -40,29 +66,29 @@
         <!-- Gráfico de Torta -->
         <section class="dashboard-panel" style="margin-bottom: 25px;">
             <div class="panel-header" style="margin-bottom: 15px; padding-bottom: 10px;">
-                <h3>Distribución por Grupo</h3>
+                <h3>Distribución de Ingresos por División</h3>
             </div>
-            <div id="gyp-pie-chart" style="position: relative; height: 150px; width: 100%; display: flex; justify-content: center;">
+            <div id="gyp-pie-chart" style="position: relative; height: 200px; width: 100%; display: flex; justify-content: center;">
             </div>
         </section>
 
         <!-- Panel de Datos -->
         <section class="dashboard-panel">
             <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                <h3>Resumen Ganancias y Perdidas <span style="font-size: 0.9rem; color: var(--text-secondary); font-weight: normal; font-family: monospace;">(Expresado en MM $)</span></h3>
-                <a id="btn-ver-divisiones" href="empresa_divisiones.html" class="btn-toggle-view">Ver por Divisiones</a>
+                <h3>Reporte de Ganancias y Pérdidas por Divisiones <span style="font-size: 0.9rem; color: var(--text-secondary); font-weight: normal; font-family: monospace;">(Expresado en MM $)</span></h3>
+                <a id="btn-ver-simple" href="empresa1.html" class="btn-toggle-view">Ver Dashboard Simple</a>
             </div>
             
             <!-- Mensajes de Estado -->
             <div id="error-message" class="error-message hidden"></div>
-            <div id="loading" class="loading">Consultando datos en Supabase...</div>
+            <div id="loading" class="loading">Consultando divisiones y datos en Supabase...</div>
             
             <!-- Tabla de Datos -->
             <div class="table-container">
                 <table class="data-table">
                     <thead>
                         <tr id="table-header">
-                            <!-- Las cabeceras se generarán dinámicamente -->
+                            <!-- Las cabeceras se generarán dinámicamente según las divisiones obtenidas -->
                         </tr>
                     </thead>
                     <tbody id="table-body">
@@ -74,8 +100,8 @@
     </main>
 
     <!-- Configuración y Lógica de la Aplicación -->
-    <script src="config.js"></script>
-    <script src="filtros.js"></script>
-    <script src="empresa1.js"></script>
+    <script src="config.js?v=1.1"></script>
+    <script src="filtros.js?v=1.1"></script>
+    <script src="empresa_divisiones.js?v=1.1"></script>
 </body>
 </html>

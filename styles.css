@@ -562,5 +562,25 @@ body.sidebar-collapsed .main-content {
     }
 }
 
+/* Botones para alternar vistas */
+.btn-toggle-view {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-decoration: none;
+    transition: background-color 0.2s;
+    display: inline-block;
+}
+.btn-toggle-view:hover {
+    background-color: var(--secondary-color);
+    color: white;
+}
+
+
 
 

@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 if (page === 'index.html') {
                     document.getElementById('nav-inicio')?.classList.add('active');
-                } else if (page === 'empresa1.html') {
+                } else if (page === 'empresa1.html' || page === 'empresa_divisiones.html') {
                     document.getElementById('nav-gyp')?.classList.add('active');
                     const header = document.getElementById('nav-gyp-group');
                     if (header) {

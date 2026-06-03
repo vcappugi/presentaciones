@@ -41,6 +41,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (tituloEmpresa) tituloEmpresa.textContent = valorEmpresa;
     if (tituloPeriodo) tituloPeriodo.textContent = `${valorPeriodo} (${valorDimension})`;
 
+    // Actualizar enlace a división si existe
+    const btnVerDivisiones = document.getElementById('btn-ver-divisiones');
+    if (btnVerDivisiones) {
+        btnVerDivisiones.href = `empresa_divisiones.html?empresa=${encodeURIComponent(valorEmpresa)}&periodo=${encodeURIComponent(valorPeriodo)}&dimension=${encodeURIComponent(valorDimension)}`;
+    }
+
     // 2. Construir la URL de consulta a Supabase según el formato indicado
     const urlConsulta = `${CONFIG.SUPABASE_URL}/rest/v1/gyp?empresa=eq.${encodeURIComponent(valorEmpresa)}&periodo=eq.${encodeURIComponent(valorPeriodo)}&dimension=eq.${encodeURIComponent(valorDimension)}&order=grupo.asc,cta.asc`;
 
