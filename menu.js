@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (page === 'index.html') {
                     document.getElementById('nav-inicio')?.classList.add('active');
                 } else if (page === 'empresa1.html' || page === 'empresa_divisiones.html') {
-                    document.getElementById('nav-gyp')?.classList.add('active');
+                    document.getElementById('nav-empresa-divisiones')?.classList.add('active');
                     const header = document.getElementById('nav-gyp-group');
                     if (header) {
                         header.nextElementSibling.style.display = 'block';
@@ -47,6 +47,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else if (page === 'ct_historico.html') {
                     document.getElementById('nav-ct-historico')?.classList.add('active');
                     const header = document.getElementById('nav-ct-group');
+                    if (header) {
+                        header.nextElementSibling.style.display = 'block';
+                        header.querySelector('.collapsible-icon').style.transform = 'rotate(90deg)';
+                    }
+                } else if (page === 'fc_actual.html') {
+                    document.getElementById('nav-fc-actual')?.classList.add('active');
+                    const header = document.getElementById('nav-fc-group');
                     if (header) {
                         header.nextElementSibling.style.display = 'block';
                         header.querySelector('.collapsible-icon').style.transform = 'rotate(90deg)';
