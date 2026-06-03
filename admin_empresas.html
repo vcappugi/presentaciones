@@ -42,6 +42,20 @@
         .btn-edit:hover {
             background-color: #2563eb;
         }
+        .btn-divisiones {
+            background-color: #10b981;
+            color: white;
+        }
+        .btn-divisiones:hover {
+            background-color: #059669;
+        }
+        .btn-delete {
+            background-color: #ef4444;
+            color: white;
+        }
+        .btn-delete:hover {
+            background-color: #dc2626;
+        }
         
         /* Modal Styles */
         .modal-overlay {
@@ -61,7 +75,7 @@
             pointer-events: auto;
         }
         .modal-content {
-            background: white;
+            background: var(--surface-color);
             padding: 30px;
             border-radius: 12px;
             width: 100%;
@@ -96,12 +110,14 @@
             font-weight: 500;
             color: var(--text-secondary);
         }
-        .form-group input {
+        .form-group input, .form-group select {
             width: 100%;
             padding: 10px;
             border: 1px solid var(--border-color);
             border-radius: 8px;
             font-family: inherit;
+            background-color: var(--surface-color);
+            color: var(--text-primary);
         }
         .form-actions {
             display: flex;
@@ -117,6 +133,9 @@
             border-radius: 8px;
             font-weight: 600;
             cursor: pointer;
+        }
+        .btn-cancel:hover {
+            background: #d1d5db;
         }
     </style>
 </head>
@@ -204,7 +223,63 @@
         </div>
     </div>
 
-    <script src="config.js"></script>
-    <script src="admin_empresas.js"></script>
+    <!-- Modal Divisiones -->
+    <div id="divisiones-modal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3 id="div-modal-title">Gestionar Divisiones</h3>
+                <button id="btn-close-div-modal" class="modal-close">&times;</button>
+            </div>
+            
+            <form id="form-division" style="margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border-color);">
+                <input type="hidden" id="div-empresa-nombre">
+                
+                <div style="display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap;">
+                    <div class="form-group" style="flex: 2; min-width: 180px; margin-bottom: 0;">
+                        <label for="div-nombre">Nombre de la División</label>
+                        <input type="text" id="div-nombre" required placeholder="Ej: REPUESTOS" style="height: 40px;">
+                    </div>
+                    <div class="form-group" style="flex: 2; min-width: 180px; margin-bottom: 0;">
+                        <label for="div-columna">Columna en GyP</label>
+                        <select id="div-columna" required style="height: 40px; padding: 5px 10px;">
+                            <option value="monto">monto</option>
+                            <option value="monto2">monto2</option>
+                            <option value="monto3">monto3</option>
+                            <option value="monto4">monto4</option>
+                            <option value="monto5">monto5</option>
+                            <option value="monto6">monto6</option>
+                            <option value="monto7">monto7</option>
+                            <option value="monto8">monto8</option>
+                            <option value="monto9">monto9</option>
+                            <option value="monto10">monto10</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-primary" style="height: 40px; padding: 0 20px; margin-bottom: 0;">Agregar</button>
+                </div>
+            </form>
+
+            <div style="max-height: 250px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 8px;">
+                <table class="data-table" style="font-size: 0.9rem; min-width: 100%;">
+                    <thead>
+                        <tr>
+                            <th style="padding: 10px 15px;">División</th>
+                            <th style="padding: 10px 15px;">Columna</th>
+                            <th style="padding: 10px 15px; width: 80px; text-align: right;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body-divisiones">
+                        <!-- Divisiones de la empresa cargadas dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="form-actions" style="margin-top: 20px;">
+                <button type="button" id="btn-cerrar-div-modal" class="btn-cancel">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="config.js?v=1.1"></script>
+    <script src="admin_empresas.js?v=1.1"></script>
 </body>
 </html>
