@@ -289,7 +289,6 @@ document.addEventListener('DOMContentLoaded', () => {
             headerHtml += `<th style="text-align: right;">${m}</th>`;
         });
         headerHtml += `<th style="text-align: center;">Tendencia</th>`;
-        headerHtml += `<th style="text-align: right;">Total Acumulado</th>`;
         tableHeader.innerHTML = headerHtml;
 
         // Agrupación
@@ -408,7 +407,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 </td>
                 ${celdasMesesGrupo}
                 <td style="text-align: center; vertical-align: middle;" class="sparkline-cell" data-title="${clase}" data-vals="${sparklineDataGroup.join(',')}">${sparklineHtmlGroup}</td>
-                <td style="text-align: right; font-size: 1.1rem;">${formatMonto(groupData.totalHistorico)}</td>
             `;
             tableBody.appendChild(trGroup);
             makeCollapsible(trGroup, groupId);
@@ -449,7 +447,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     </td>
                     ${celdasMesesItem}
                     <td style="text-align: center; vertical-align: middle;" class="sparkline-cell" data-title="${ctaName}" data-vals="${sparklineDataItem.join(',')}">${sparklineHtmlItem}</td>
-                    <td style="text-align: right; font-weight: bold;">${formatMonto(item.totalAcumulado)}</td>
                 `;
                 tableBody.appendChild(trItem);
             });
@@ -476,9 +473,6 @@ document.addEventListener('DOMContentLoaded', () => {
             ${celdasNetosMensuales}
             <td style="text-align: center; vertical-align: middle; background-color: var(--primary-color);" class="sparkline-cell" data-title="Capital Neto" data-vals="${sparklineDataTotal.join(',')}">
                 ${sparklineHtmlTotal.replace('var(--primary-color)', 'white')}
-            </td>
-            <td style="text-align: right; font-size: 1.1rem; background-color: var(--primary-color); color: white; font-weight: bold;">
-                ${formatMonto(sumNeto, false, 'white')}
             </td>
         `;
         tableBody.appendChild(trTotal);
