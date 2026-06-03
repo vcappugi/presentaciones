@@ -145,6 +145,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 totalEgresos += valRounded;
             }
 
+            // Excluir conceptos con monto cero o vacío en la tabla
+            if (valRounded === 0) {
+                return;
+            }
+
             if (!agrupado[g]) {
                 agrupado[g] = { total: 0, subgrupos: {}, ordenGrupo: concept.orden };
             }
