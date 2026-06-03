@@ -1,3 +1,8 @@
+// Variables globales para almacenar estado de filtros y datos
+let currentGypData = null;
+let currentDivisiones = [];
+let currentMesesOrdenados = [];
+
 document.addEventListener('DOMContentLoaded', () => {
     // 1. Obtener los parámetros de la URL
     const urlParams = new URLSearchParams(window.location.search);
@@ -72,23 +77,47 @@ document.addEventListener('DOMContentLoaded', () => {
     // Pasamos los meses consultados a renderTable para asegurar el orden de las columnas
     const mesesOrdenados = mesesConsulta;
 
-    // 3. Realizar la petición fetch a Supabase
-    fetch(urlConsulta, {
-        method: 'GET',
-        headers: {
-            'apikey': CONFIG.SUPABASE_KEY,
-            'Authorization': `Bearer ${CONFIG.SUPABASE_KEY}`,
-            'Content-Type': 'application/json'
-        }
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error(`Error en la petición: ${response.status} ${response.statusText}`);
-        }
-        return response.json();
-    })
-    .then(data => {
-        renderTable(data, mesesOrdenados);
+    // 3. Realizar la petición fetch en paralelo a Supabase (divisiones e histórico gyp)
+    const urlDivi = `${CONFIG.SUPABASE_URL}/rest/v1/divi?empresa=eq.${encodeURIComponent(valorEmpresa)}&order=id.asc`;
+
+    Promise.all([
+        fetch(urlDivi, {
+            method: 'GET',
+            headers: {
+                'apikey': CONFIG.SUPABASE_KEY,
+                'Authorization': `Bearer ${CONFIG.SUPABASE_KEY}`,
+                'Content-Type': 'application/json'
+            }
+        }).then(res => res.ok ? res.json() : []),
+        fetch(urlConsulta, {
+            method: 'GET',
+            headers: {
+                'apikey': CONFIG.SUPABASE_KEY,
+                'Authorization': `Bearer ${CONFIG.SUPABASE_KEY}`,
+                'Content-Type': 'application/json'
+            }
+        }).then(response => {
+            if (!response.ok) {
+                throw new Error(`Error en la petición: ${response.status} ${response.statusText}`);
+            }
+            return response.json();
+        })
+    ])
+    .then(([divisiones, gypData]) => {
+        currentGypData = gypData;
+        currentDivisiones = divisiones || [];
+        currentMesesOrdenados = mesesOrdenados;
+
+        // Esperar a que la barra de filtros esté en el DOM para inyectar el de divisiones
+        const interval = setInterval(() => {
+            const container = document.querySelector('.filters-container');
+            if (container) {
+                clearInterval(interval);
+                setupDivisionFilter(container, currentDivisiones);
+            }
+        }, 50);
+
+        renderTable(currentGypData, currentMesesOrdenados, 'all', currentDivisiones);
     })
     .catch(error => {
         console.error('Error fetching data:', error);
@@ -100,7 +129,51 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-function renderTable(data, mesesOrdenados) {
+function setupDivisionFilter(container, divisiones) {
+    // Eliminar filtro previo si existe para evitar duplicados
+    const oldFilter = document.getElementById('divi-filter-group');
+    if (oldFilter) oldFilter.remove();
+
+    if (!divisiones || divisiones.length === 0) return;
+
+    // Crear el contenedor de filtro
+    const diviFilterGroup = document.createElement('div');
+    diviFilterGroup.id = 'divi-filter-group';
+    diviFilterGroup.className = 'col-12 col-md-auto filter-group';
+    
+    let optionsHtml = '<option value="all" selected>Consolidado</option>';
+    divisiones.forEach(div => {
+        optionsHtml += `<option value="${div.columna}">${div.division}</option>`;
+    });
+
+    diviFilterGroup.innerHTML = `
+        <div class="d-flex align-items-center">
+            <label for="select-division" class="form-label me-2 mb-0 fw-semibold text-dark text-nowrap" style="font-size: 0.85rem;">División:</label>
+            <select id="select-division" class="form-select form-select-sm" style="min-width: 130px;">
+                ${optionsHtml}
+            </select>
+        </div>
+    `;
+
+    // Insertar antes del botón "Consultar Reporte"
+    const btnConsultar = document.getElementById('btn-consultar');
+    if (btnConsultar) {
+        const containerToUse = btnConsultar.parentElement;
+        containerToUse.parentNode.insertBefore(diviFilterGroup, containerToUse);
+    } else {
+        container.appendChild(diviFilterGroup);
+    }
+
+    // Escuchar cambios en el filtro
+    const selectDivision = document.getElementById('select-division');
+    if (selectDivision) {
+        selectDivision.addEventListener('change', (e) => {
+            renderTable(currentGypData, currentMesesOrdenados, e.target.value, currentDivisiones);
+        });
+    }
+}
+
+function renderTable(data, mesesOrdenados, divisionSelected = 'all', divisiones = []) {
     const tableBody = document.getElementById('table-body');
     const tableHeader = document.getElementById('table-header');
     
@@ -172,7 +245,16 @@ function renderTable(data, mesesOrdenados) {
         const g = row.grupo || 'Sin Grupo';
         const sg2 = row.subgrupo2 || 'Sin Subgrupo 2';
         const sg = row.subgrupo || 'Sin Subgrupo';
-        let monto = parseFloat(row.monto) || 0;
+        let monto = 0;
+        if (!divisiones || divisiones.length === 0) {
+            monto = parseFloat(row.monto) || 0;
+        } else if (divisionSelected === 'all') {
+            divisiones.forEach(d => {
+                monto += parseFloat(row[d.columna]) || 0;
+            });
+        } else {
+            monto = parseFloat(row[divisionSelected]) || 0;
+        }
         monto = Math.round((monto + Number.EPSILON) * 100) / 100;
         const periodoRow = row.periodo;
 

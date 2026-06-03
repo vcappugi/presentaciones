@@ -261,7 +261,7 @@ function renderDashboard(empresas, periodo, dimension) {
         
         // Redirección al hacer clic
         tr.addEventListener('click', () => {
-            window.location.href = `empresa1.html?empresa=${encodeURIComponent(emp.nombre)}&periodo=${encodeURIComponent(periodo)}&dimension=${encodeURIComponent(dimension)}`;
+            window.location.href = `empresa_divisiones.html?empresa=${encodeURIComponent(emp.nombre)}&periodo=${encodeURIComponent(periodo)}&dimension=${encodeURIComponent(dimension)}`;
         });
 
         const margenStr = emp.margenNeto.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' %';

@@ -63,14 +63,14 @@ async function fetchDivisiones(empresa, periodo, dimension) {
             throw new Error(`Error al consultar divisiones: ${resDivi.status} ${resDivi.statusText}`);
         }
         
-        const divisiones = await resDivi.json();
+        let divisiones = await resDivi.json();
         
         if (!divisiones || divisiones.length === 0) {
-            // Si la empresa no tiene divisiones configuradas en la tabla divi, mostramos una advertencia
-            errorEl.textContent = `La empresa "${empresa}" no tiene divisiones configuradas en la tabla de divisiones (divi).`;
-            errorEl.classList.remove('hidden');
-            loadingEl.classList.add('hidden');
-            return;
+            // Si la empresa no tiene divisiones configuradas en la tabla divi, usamos el campo "monto" de forma directa
+            divisiones = [{
+                division: 'Monto',
+                columna: 'monto'
+            }];
         }
 
         // Consultar datos GyP
@@ -108,8 +108,10 @@ function renderDivisionesTable(gypData, divisiones) {
     tableBody.innerHTML = '';
     tableHeader.innerHTML = '';
     
+    const isSingleVirtual = divisiones.length === 1 && divisiones[0].columna === 'monto';
+    
     if (!gypData || gypData.length === 0) {
-        const totalCols = divisiones.length + 4;
+        const totalCols = divisiones.length + (isSingleVirtual ? 3 : 4);
         tableBody.innerHTML = `<tr><td colspan="${totalCols}" style="text-align: center; padding: 20px; color: #6b7280;">No hay datos disponibles para esta empresa y periodo.</td></tr>`;
         return;
     }
@@ -136,10 +138,12 @@ function renderDivisionesTable(gypData, divisiones) {
         tableHeader.appendChild(th);
     });
     
-    const thTotal = document.createElement('th');
-    thTotal.textContent = 'TOTAL CONSOLIDADO';
-    thTotal.style.textAlign = 'right';
-    tableHeader.appendChild(thTotal);
+    if (!isSingleVirtual) {
+        const thTotal = document.createElement('th');
+        thTotal.textContent = 'TOTAL CONSOLIDADO';
+        thTotal.style.textAlign = 'right';
+        tableHeader.appendChild(thTotal);
+    }
     
     const thPct = document.createElement('th');
     thPct.textContent = '% / INGRESOS';
@@ -360,8 +364,11 @@ function renderDivisionesTable(gypData, divisiones) {
             colsHtml += `<td style="text-align: right; font-size: 1.05rem;">${formatVal(gData.totalDiv[d.columna])}</td>`;
         });
         
+        if (!isSingleVirtual) {
+            colsHtml += `<td style="text-align: right; font-size: 1.05rem;">${formatVal(gData.totalConsolidated)}</td>`;
+        }
+        
         colsHtml += `
-            <td style="text-align: right; font-size: 1.05rem;">${formatVal(gData.totalConsolidated)}</td>
             <td style="text-align: right; font-size: 1.05rem;">${calcPorcentaje(gData.totalConsolidated)}</td>
         `;
         
@@ -392,8 +399,11 @@ function renderDivisionesTable(gypData, divisiones) {
                 sg1Html += `<td style="text-align: right;">${formatVal(sg1Data.totalDiv[d.columna])}</td>`;
             });
             
+            if (!isSingleVirtual) {
+                sg1Html += `<td style="text-align: right;">${formatVal(sg1Data.totalConsolidated)}</td>`;
+            }
+            
             sg1Html += `
-                <td style="text-align: right;">${formatVal(sg1Data.totalConsolidated)}</td>
                 <td style="text-align: right;">${calcPorcentaje(sg1Data.totalConsolidated)}</td>
             `;
             
@@ -423,8 +433,11 @@ function renderDivisionesTable(gypData, divisiones) {
                     sg2Html += `<td style="text-align: right;">${formatVal(sg2Data.totalDiv[d.columna])}</td>`;
                 });
                 
+                if (!isSingleVirtual) {
+                    sg2Html += `<td style="text-align: right;">${formatVal(sg2Data.totalConsolidated)}</td>`;
+                }
+                
                 sg2Html += `
-                    <td style="text-align: right;">${formatVal(sg2Data.totalConsolidated)}</td>
                     <td style="text-align: right;">${calcPorcentaje(sg2Data.totalConsolidated)}</td>
                 `;
                 
@@ -448,8 +461,11 @@ function renderDivisionesTable(gypData, divisiones) {
                         itemHtml += `<td style="text-align: right; font-size: 0.95rem;">${formatVal(v)}</td>`;
                     });
                     
+                    if (!isSingleVirtual) {
+                        itemHtml += `<td style="text-align: right; font-size: 0.95rem; font-weight: 500;">${formatVal(item.consolidatedTotal)}</td>`;
+                    }
+                    
                     itemHtml += `
-                        <td style="text-align: right; font-size: 0.95rem; font-weight: 500;">${formatVal(item.consolidatedTotal)}</td>
                         <td style="text-align: right; font-size: 0.95rem;">${calcPorcentaje(item.consolidatedTotal)}</td>
                     `;
                     
@@ -481,8 +497,11 @@ function renderDivisionesTable(gypData, divisiones) {
             const pctUB = totalIngresosConsolidated ? (utilidadBrutaConsolidated / totalIngresosConsolidated) * 100 : 0;
             const pctUBStr = pctUB.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' %';
             
+            if (!isSingleVirtual) {
+                ubHtml += `<td style="text-align: right; font-size: 1.1rem;">${formatVal(utilidadBrutaConsolidated)}</td>`;
+            }
+            
             ubHtml += `
-                <td style="text-align: right; font-size: 1.1rem;">${formatVal(utilidadBrutaConsolidated)}</td>
                 <td style="text-align: right; font-size: 1.1rem;">${pctUBStr}</td>
             `;
             
@@ -512,8 +531,11 @@ function renderDivisionesTable(gypData, divisiones) {
             const margenUBConsolidated = totalIngresosOperacionalesConsolidated ? (utilidadBrutaConsolidated / totalIngresosOperacionalesConsolidated) * 100 : 0;
             const margenUBConsolidatedStr = margenUBConsolidated.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' %';
             
+            if (!isSingleVirtual) {
+                margenUBHtml += `<td style="text-align: right; font-size: 1.1rem;">${margenUBConsolidatedStr}</td>`;
+            }
+            
             margenUBHtml += `
-                <td style="text-align: right; font-size: 1.1rem;">${margenUBConsolidatedStr}</td>
                 <td style="text-align: right; font-size: 1.1rem;"></td>
             `;
             
@@ -546,8 +568,11 @@ function renderDivisionesTable(gypData, divisiones) {
             const pctRO = totalIngresosConsolidated ? (resultadoOperativoConsolidated / totalIngresosConsolidated) * 100 : 0;
             const pctROStr = pctRO.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' %';
             
+            if (!isSingleVirtual) {
+                roHtml += `<td style="text-align: right; font-size: 1.1rem;">${formatVal(resultadoOperativoConsolidated)}</td>`;
+            }
+            
             roHtml += `
-                <td style="text-align: right; font-size: 1.1rem;">${formatVal(resultadoOperativoConsolidated)}</td>
                 <td style="text-align: right; font-size: 1.1rem;">${pctROStr}</td>
             `;
             
@@ -578,8 +603,11 @@ function renderDivisionesTable(gypData, divisiones) {
             const margenROConsolidated = totalIngresosOperacionalesConsolidated ? (resultadoOperativoConsolidated / totalIngresosOperacionalesConsolidated) * 100 : 0;
             const margenROConsolidatedStr = margenROConsolidated.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' %';
             
+            if (!isSingleVirtual) {
+                margenROHtml += `<td style="text-align: right; font-size: 1.1rem;">${margenROConsolidatedStr}</td>`;
+            }
+            
             margenROHtml += `
-                <td style="text-align: right; font-size: 1.1rem;">${margenROConsolidatedStr}</td>
                 <td style="text-align: right; font-size: 1.1rem;"></td>
             `;
             
@@ -612,8 +640,11 @@ function renderDivisionesTable(gypData, divisiones) {
     const pctRN = totalIngresosConsolidated ? (resultadoNetoConsolidated / totalIngresosConsolidated) * 100 : 0;
     const pctRNStr = pctRN.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' %';
     
+    if (!isSingleVirtual) {
+        rnHtml += `<td style="text-align: right; font-size: 1.2rem;">${formatVal(resultadoNetoConsolidated)}</td>`;
+    }
+    
     rnHtml += `
-        <td style="text-align: right; font-size: 1.2rem;">${formatVal(resultadoNetoConsolidated)}</td>
         <td style="text-align: right; font-size: 1.2rem;">${pctRNStr}</td>
     `;
     
@@ -643,8 +674,11 @@ function renderDivisionesTable(gypData, divisiones) {
     
     const margenRNStr = margenUtilidadNetaConsolidated.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' %';
     
+    if (!isSingleVirtual) {
+        margenRNHtml += `<td style="text-align: right; font-size: 1.15rem;">${margenRNStr}</td>`;
+    }
+    
     margenRNHtml += `
-        <td style="text-align: right; font-size: 1.15rem;">${margenRNStr}</td>
         <td style="text-align: right; font-size: 1.15rem;"></td>
     `;
     
@@ -672,10 +706,19 @@ function renderDivisionesTable(gypData, divisiones) {
 }
 
 function renderPieChartDivisiones(divisiones, totalIngresosDiv) {
-    const drawChart = () => {
-        const chartDiv = document.getElementById('gyp-pie-chart');
-        if (!chartDiv) return;
+    const chartDiv = document.getElementById('gyp-pie-chart');
+    if (!chartDiv) return;
 
+    // Si solo hay una columna virtual de "monto" (sin divisiones reales), ocultar la sección del gráfico
+    const chartSection = chartDiv.closest('section');
+    if (divisiones.length === 1 && divisiones[0].columna === 'monto') {
+        if (chartSection) chartSection.style.display = 'none';
+        return;
+    } else {
+        if (chartSection) chartSection.style.display = 'block';
+    }
+
+    const drawChart = () => {
         // Limpiar contenedor
         chartDiv.innerHTML = '';
 

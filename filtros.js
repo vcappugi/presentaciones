@@ -136,7 +136,7 @@ function initFiltros() {
                 window.location.href = `${targetPage}?periodo=${encodeURIComponent(periodo)}&dimension=${encodeURIComponent(dimension)}`;
             } else {
                 if (currentPage === 'admin.html' || currentPage === 'admin_empresas.html' || currentPage === '') {
-                    targetPage = 'empresa1.html';
+                    targetPage = 'empresa_divisiones.html';
                 }
                 window.location.href = `${targetPage}?empresa=${encodeURIComponent(empresa)}&periodo=${encodeURIComponent(periodo)}&dimension=${encodeURIComponent(dimension)}`;
             }
