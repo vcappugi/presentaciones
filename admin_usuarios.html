@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Gestión de Usuarios - Corporación BEL</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="menu.js"></script>
+    <style>
+        /* Estilos adicionales para el CRUD y Modal */
+        .admin-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+        }
+        .btn-action {
+            padding: 6px 12px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        .btn-edit {
+            background-color: #3b82f6;
+            color: white;
+        }
+        .btn-edit:hover {
+            background-color: #2563eb;
+        }
+        .btn-delete {
+            background-color: #ef4444;
+            color: white;
+        }
+        .btn-delete:hover {
+            background-color: #dc2626;
+        }
+        
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .modal-content {
+            background: var(--surface-color);
+            padding: 30px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+        }
+        .modal-header h3 {
+            color: var(--primary-color);
+            font-size: 1.25rem;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-family: inherit;
+            background-color: var(--surface-color);
+            color: var(--text-primary);
+        }
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 25px;
+        }
+        .btn-cancel {
+            background: #e5e7eb;
+            color: var(--text-primary);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .btn-cancel:hover {
+            background: #d1d5db;
+        }
+        .badge {
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .badge-admin {
+            background-color: rgba(16, 185, 129, 0.15);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+        .badge-user {
+            background-color: rgba(59, 130, 246, 0.15);
+            color: #3b82f6;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+        .password-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: monospace;
+        }
+        .btn-toggle-password {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Menú Lateral / Sidebar -->
+    <aside class="sidebar" id="sidebar-container"></aside>
+
+    <!-- Contenido Principal -->
+    <main class="main-content">
+        <header class="top-bar" style="display: flex; justify-content: space-between; align-items: center;">
+            <h1 class="page-title">Gestión de Usuarios</h1>
+            <a href="admin.html" class="btn-cancel" style="text-decoration: none; font-size: 0.9rem;">⬅ Volver al Panel</a>
+        </header>
+
+        <section class="dashboard-panel">
+            <div class="admin-actions">
+                <h3>Listado de Usuarios</h3>
+                <button id="btn-nuevo-usuario" class="btn-primary">+ Nuevo Usuario</button>
+            </div>
+            
+            <div id="error-message" class="error-message hidden"></div>
+            <div id="loading" class="loading">Cargando usuarios...</div>
+            
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Usuario (Nickname)</th>
+                            <th>Nombre Completo</th>
+                            <th>Rol</th>
+                            <th>Contraseña</th>
+                            <th style="text-align: right;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body-usuarios">
+                        <!-- Datos cargados dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal Formulario -->
+    <div id="usuario-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">Nuevo Usuario</h3>
+                <button id="btn-close-modal" class="modal-close">&times;</button>
+            </div>
+            <form id="form-usuario">
+                <input type="hidden" id="usuario-id">
+                
+                <div class="form-group">
+                    <label for="usuario-nickname">Nickname / Usuario</label>
+                    <input type="text" id="usuario-nickname" required placeholder="Ej: jgomez">
+                </div>
+                <div class="form-group">
+                    <label for="usuario-nombre">Nombre Completo</label>
+                    <input type="text" id="usuario-nombre" required placeholder="Ej: Juan Gómez">
+                </div>
+                <div class="form-group">
+                    <label for="usuario-password">Contraseña</label>
+                    <input type="text" id="usuario-password" required placeholder="Contraseña de acceso">
+                </div>
+                <div class="form-group">
+                    <label for="usuario-rol">Rol</label>
+                    <select id="usuario-rol" required>
+                        <option value="usuario">usuario</option>
+                        <option value="admin">admin</option>
+                    </select>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" id="btn-cancel-modal" class="btn-cancel">Cancelar</button>
+                    <button type="submit" class="btn-primary" id="btn-save-modal">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="config.js?v=1.1"></script>
+    <script src="admin_usuarios.js?v=1.1"></script>
+</body>
+</html>

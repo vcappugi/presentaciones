@@ -33,6 +33,24 @@ function initFiltros() {
     // Función genérica para cargar opciones desde Supabase
     const fetchOpciones = async (tabla, selectElement) => {
         try {
+            if (tabla === 'empresas') {
+                const allowed = await window.getAllowedCompanies();
+                if (allowed) {
+                    selectElement.innerHTML = '';
+                    if (allowed.length === 0) {
+                        selectElement.innerHTML = `<option value="">No hay empresas asignadas</option>`;
+                        return;
+                    }
+                    allowed.forEach(val => {
+                        const option = document.createElement('option');
+                        option.value = val;
+                        option.textContent = val;
+                        selectElement.appendChild(option);
+                    });
+                    return;
+                }
+            }
+
             const response = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/${tabla}`, {
                 method: 'GET',
                 headers: {

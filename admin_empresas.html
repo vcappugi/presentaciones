@@ -167,6 +167,7 @@
                             <th>ID</th>
                             <th>Nombre</th>
                             <th>Administrador</th>
+                            <th>Usuario Asignado</th>
                             <th>Plan</th>
                             <th>Teléfono</th>
                             <th>Acciones</th>
@@ -214,6 +215,12 @@
                     <label for="empresa-telefono">Teléfono</label>
                     <input type="text" id="empresa-telefono">
                 </div>
+                <div class="form-group">
+                    <label for="empresa-usuario">Usuario Asignado</label>
+                    <select id="empresa-usuario">
+                        <option value="">Sin Asignar</option>
+                    </select>
+                </div>
                 
                 <div class="form-actions">
                     <button type="button" id="btn-cancel-modal" class="btn-cancel">Cancelar</button>
@@ -233,6 +240,7 @@
             
             <form id="form-division" style="margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border-color);">
                 <input type="hidden" id="div-empresa-nombre">
+                <input type="hidden" id="div-id">
                 
                 <div style="display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap;">
                     <div class="form-group" style="flex: 2; min-width: 180px; margin-bottom: 0;">
@@ -254,7 +262,10 @@
                             <option value="monto10">monto10</option>
                         </select>
                     </div>
-                    <button type="submit" class="btn-primary" style="height: 40px; padding: 0 20px; margin-bottom: 0;">Agregar</button>
+                    <div style="display: flex; gap: 10px; margin-bottom: 0;">
+                        <button type="submit" id="btn-save-div" class="btn-primary" style="height: 40px; padding: 0 20px; margin-bottom: 0;">Agregar</button>
+                        <button type="button" id="btn-cancel-div-edit" class="btn-cancel hidden" style="height: 40px; padding: 0 15px; margin-bottom: 0;">Cancelar</button>
+                    </div>
                 </div>
             </form>
 

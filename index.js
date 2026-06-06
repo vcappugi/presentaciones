@@ -112,7 +112,11 @@ async function consultarDatosConsolidados(periodo, dimension) {
             throw new Error(`Error en la petición de datos: ${response.statusText}`);
         }
 
-        const allData = await response.json();
+        const fetchedData = await response.json();
+        const allowedCompanies = await window.getAllowedCompanies();
+        const allData = allowedCompanies 
+            ? fetchedData.filter(row => allowedCompanies.includes(row.empresa))
+            : fetchedData;
 
         if (!allData || allData.length === 0) {
             loadingEl.style.display = 'none';

@@ -21,7 +21,10 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     const baseUrl = `${CONFIG.SUPABASE_URL}/rest/v1/empresas`;
 
-    // Cargar tabla inicial
+    let listadoUsuarios = [];
+
+    // Cargar tabla inicial y usuarios
+    fetchUsuarios();
     fetchEmpresas();
 
     // Eventos Modal
@@ -35,6 +38,33 @@ document.addEventListener('DOMContentLoaded', () => {
         await saveEmpresa();
     });
 
+    async function fetchUsuarios() {
+        try {
+            const response = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/usuario?order=nickname.asc`, {
+                method: 'GET',
+                headers
+            });
+            if (response.ok) {
+                listadoUsuarios = await response.json();
+                populateUsuariosSelect();
+            }
+        } catch (err) {
+            console.error('Error fetching users:', err);
+        }
+    }
+
+    function populateUsuariosSelect() {
+        const selectUser = document.getElementById('empresa-usuario');
+        if (!selectUser) return;
+        selectUser.innerHTML = '<option value="">Sin Asignar</option>';
+        listadoUsuarios.forEach(u => {
+            const opt = document.createElement('option');
+            opt.value = u.nickname;
+            opt.textContent = `${u.nickname} (${u.nombre})`;
+            selectUser.appendChild(opt);
+        });
+    }
+
     function openModal(empresa = null) {
         if (empresa) {
             modalTitle.textContent = 'Editar Empresa';
@@ -45,10 +75,12 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('empresa-mail').value = empresa.mail || '';
             document.getElementById('empresa-plan').value = empresa.plan || '';
             document.getElementById('empresa-telefono').value = empresa.telefono || '';
+            document.getElementById('empresa-usuario').value = empresa.usuario || '';
         } else {
             modalTitle.textContent = 'Nueva Empresa';
             formEmpresa.reset();
             document.getElementById('empresa-id').value = '';
+            document.getElementById('empresa-usuario').value = '';
         }
         modal.classList.add('active');
     }
@@ -81,7 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderTable(data) {
         if (!data || data.length === 0) {
-            tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px;">No hay empresas registradas.</td></tr>';
+            tableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px;">No hay empresas registradas.</td></tr>';
             return;
         }
 
@@ -91,6 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td>${emp.id}</td>
                 <td style="font-weight: 600;">${emp.nombre || '-'}</td>
                 <td>${emp.administrador || '-'}</td>
+                <td style="font-weight: 500; color: var(--primary-color);">${emp.usuario || '-'}</td>
                 <td>${emp.plan || '-'}</td>
                 <td>${emp.telefono || '-'}</td>
                 <td>
@@ -126,7 +159,8 @@ document.addEventListener('DOMContentLoaded', () => {
             direccion: document.getElementById('empresa-direccion').value.trim() || null,
             mail: document.getElementById('empresa-mail').value.trim() || null,
             plan: document.getElementById('empresa-plan').value.trim() || null,
-            telefono: document.getElementById('empresa-telefono').value.trim() || null
+            telefono: document.getElementById('empresa-telefono').value.trim() || null,
+            usuario: document.getElementById('empresa-usuario').value || null
         };
 
         btnSaveModal.disabled = true;
@@ -182,22 +216,28 @@ document.addEventListener('DOMContentLoaded', () => {
     const formDivision = document.getElementById('form-division');
     const tableBodyDivisiones = document.getElementById('table-body-divisiones');
     const divColumnaSelect = document.getElementById('div-columna');
+    const btnCancelDivEdit = document.getElementById('btn-cancel-div-edit');
+    const btnSaveDiv = document.getElementById('btn-save-div');
 
     // Registrar Cierres del modal
     if (btnCloseDivModal) btnCloseDivModal.addEventListener('click', closeDivisionesModal);
     if (btnCerrarDivModal) btnCerrarDivModal.addEventListener('click', closeDivisionesModal);
 
-    // Enviar Formulario de Nueva División
+    // Cancelar edición de división
+    if (btnCancelDivEdit) {
+        btnCancelDivEdit.addEventListener('click', resetDivisionForm);
+    }
+
+    // Enviar Formulario de Nueva / Editar División
     formDivision.addEventListener('submit', async (e) => {
         e.preventDefault();
-        await addDivision();
+        await saveDivision();
     });
 
     async function openDivisionesModal(empresaNombre) {
         divModalTitle.textContent = `Gestionar Divisiones: ${empresaNombre}`;
+        resetDivisionForm();
         document.getElementById('div-empresa-nombre').value = empresaNombre;
-        document.getElementById('div-nombre').value = '';
-        divColumnaSelect.selectedIndex = 0;
         
         divModal.classList.add('active');
         await fetchDivisiones(empresaNombre);
@@ -205,7 +245,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function closeDivisionesModal() {
         divModal.classList.remove('active');
-        formDivision.reset();
+        resetDivisionForm();
+    }
+
+    function resetDivisionForm() {
+        document.getElementById('div-id').value = '';
+        document.getElementById('div-nombre').value = '';
+        if (divColumnaSelect) divColumnaSelect.selectedIndex = 0;
+        if (btnSaveDiv) btnSaveDiv.textContent = 'Agregar';
+        if (btnCancelDivEdit) btnCancelDivEdit.classList.add('hidden');
+    }
+
+    function startEditDivision(div) {
+        document.getElementById('div-id').value = div.id;
+        document.getElementById('div-nombre').value = div.division || '';
+        if (divColumnaSelect) divColumnaSelect.value = div.columna || 'monto';
+        if (btnSaveDiv) btnSaveDiv.textContent = 'Guardar';
+        if (btnCancelDivEdit) btnCancelDivEdit.classList.remove('hidden');
     }
 
     async function fetchDivisiones(empresaNombre) {
@@ -239,10 +295,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td style="padding: 10px 15px; font-weight: 500;">${div.division}</td>
                 <td style="padding: 10px 15px; font-family: monospace;">${div.columna}</td>
                 <td style="padding: 10px 15px; text-align: right;">
+                    <button class="btn-action btn-edit btn-edit-div" data-division='${JSON.stringify(div).replace(/'/g, "&apos;")}' style="margin-right: 5px;">Editar</button>
                     <button class="btn-action btn-delete" data-id="${div.id}" data-empresa="${div.empresa}">Eliminar</button>
                 </td>
             `;
             tableBodyDivisiones.appendChild(tr);
+        });
+
+        // Registrar eventos del botón Editar
+        tableBodyDivisiones.querySelectorAll('.btn-edit-div').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const divData = JSON.parse(btn.getAttribute('data-division'));
+                startEditDivision(divData);
+            });
         });
 
         // Registrar eventos del botón Eliminar
@@ -257,33 +322,58 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    async function addDivision() {
+    async function saveDivision() {
         const empresa = document.getElementById('div-empresa-nombre').value;
         const division = document.getElementById('div-nombre').value.trim();
-        const columna = divColumnaSelect.value;
+        const columna = divColumnaSelect ? divColumnaSelect.value : 'monto';
+        const id = document.getElementById('div-id').value;
         
         const payload = { empresa, division, columna };
         
+        if (btnSaveDiv) {
+            btnSaveDiv.disabled = true;
+            btnSaveDiv.textContent = id ? 'Guardando...' : 'Agregando...';
+        }
+        
         try {
-            const response = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/divi`, {
-                method: 'POST',
-                headers: {
-                    ...headers,
-                    'Prefer': 'return=minimal'
-                },
-                body: JSON.stringify(payload)
-            });
+            let response;
+            if (id) {
+                // UPDATE (PATCH)
+                response = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/divi?id=eq.${id}`, {
+                    method: 'PATCH',
+                    headers: {
+                        ...headers,
+                        'Prefer': 'return=minimal'
+                    },
+                    body: JSON.stringify(payload)
+                });
+            } else {
+                // INSERT (POST)
+                response = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/divi`, {
+                    method: 'POST',
+                    headers: {
+                        ...headers,
+                        'Prefer': 'return=minimal'
+                    },
+                    body: JSON.stringify(payload)
+                });
+            }
 
             if (!response.ok) {
                 const err = await response.json().catch(() => ({}));
-                throw new Error(err.message || 'Error al agregar división.');
+                throw new Error(err.message || 'Error al guardar división.');
             }
 
-            document.getElementById('div-nombre').value = '';
+            resetDivisionForm();
             await fetchDivisiones(empresa);
         } catch (error) {
             console.error(error);
-            alert('Error al agregar división: ' + error.message);
+            alert('Error al guardar división: ' + error.message);
+        } finally {
+            if (btnSaveDiv) {
+                btnSaveDiv.disabled = false;
+                btnSaveDiv.textContent = id ? 'Guardar' : 'Agregar';
+            }
         }
     }
 

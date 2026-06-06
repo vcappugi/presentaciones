@@ -3,7 +3,7 @@ if (typeof google !== 'undefined') {
     google.charts.load('current', {'packages':['corechart']});
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     // 1. Obtener los parámetros de la URL
     const urlParams = new URLSearchParams(window.location.search);
     let valorEmpresa = urlParams.get('empresa');
@@ -20,6 +20,14 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('bel_empresa', valorEmpresa);
         localStorage.setItem('bel_periodo', valorPeriodo);
         localStorage.setItem('bel_dimension', valorDimension);
+    }
+
+    // Verificar si la empresa seleccionada está permitida para el usuario actual
+    const allowed = await window.getAllowedCompanies();
+    if (allowed && (!valorEmpresa || !allowed.includes(valorEmpresa))) {
+        alert('Acceso denegado: No tienes permisos para ver esta empresa.');
+        window.location.href = 'index.html';
+        return;
     }
 
     // Referencias a elementos del DOM
