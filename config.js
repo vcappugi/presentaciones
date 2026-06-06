@@ -1,10 +1,10 @@
-const CONFIG = {
-    // Lee la dirección desde las variables de entorno de Vercel
+// Validación temprana: Falla rápido si Vercel no inyectó las variables
+if (!process.env.SUPABASE_URL || !process.env.SUPABASE_KEY || !process.env.GEMINI_API_KEY) {
+    throw new Error("ERROR CRÍTICO: Faltan variables de entorno en Vercel.");
+}
+
+export const CONFIG = {
     SUPABASE_URL: process.env.SUPABASE_URL,
-
-    // Lee el token privado de Supabase de forma segura
     SUPABASE_KEY: process.env.SUPABASE_KEY,
-
-    // Lee la clave de API de Google Gemini en el servidor
     GEMINI_API_KEY: process.env.GEMINI_API_KEY
 };
