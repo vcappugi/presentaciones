@@ -1,10 +1,10 @@
 const CONFIG = {
-    // Coloca aquí la dirección de tu proyecto Supabase (ej: 'https://tu-proyecto.supabase.co')
-    SUPABASE_URL: 'https://tu-proyecto-id.supabase.co',
+    // Lee la dirección desde las variables de entorno de Vercel
+    SUPABASE_URL: process.env.SUPABASE_URL,
 
-    // Coloca aquí tu token público (anon key) de Supabase
-    SUPABASE_KEY: 'TU_SUPABASE_ANON_KEY',
+    // Lee el token privado de Supabase de forma segura
+    SUPABASE_KEY: process.env.SUPABASE_KEY,
 
-    // Clave API por defecto para Google Gemini (AI Studio)
-    GEMINI_API_KEY: 'TU_GEMINI_API_KEY'
+    // Lee la clave de API de Google Gemini en el servidor
+    GEMINI_API_KEY: process.env.GEMINI_API_KEY
 };
