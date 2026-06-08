@@ -32,6 +32,26 @@
         .text-muted {
             color: var(--text-secondary) !important;
         }
+        /* Estilos Premium para los selectores de categorías (pills) */
+        #category-pills .nav-link {
+            color: var(--text-secondary);
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 8px 16px;
+            transition: all 0.2s ease;
+        }
+        #category-pills .nav-link:hover {
+            color: var(--primary-color);
+            background-color: var(--bg-color);
+            border-color: var(--border-color);
+        }
+        #category-pills .nav-link.active {
+            color: #ffffff !important;
+            background-color: var(--secondary-color) !important;
+            border-color: var(--secondary-color) !important;
+            box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);
+        }
     </style>
 </head>
 <body>
@@ -53,6 +73,26 @@
             Consultando y consolidando datos en Supabase...
         </div>
         <div id="error-message" class="alert alert-danger hidden" role="alert"></div>
+
+        <!-- Selector de Categorías (Pills) -->
+        <div class="row mb-4" id="category-selector-row" style="display: none;">
+            <div class="col-12">
+                <ul class="nav nav-pills gap-2" id="category-pills" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active fw-bold" id="tab-todas" data-category="TODAS" type="button" role="tab">Todas las Empresas</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link fw-bold" id="tab-apl" data-category="APL" type="button" role="tab">APL</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link fw-bold" id="tab-concesionarios" data-category="Concesionarios" type="button" role="tab">Concesionarios</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link fw-bold" id="tab-otras" data-category="Otras Empresas" type="button" role="tab">Otras Empresas</button>
+                    </li>
+                </ul>
+            </div>
+        </div>
 
         <!-- Tarjetas de Resumen (KPIs) usando Rejilla de Bootstrap 5 -->
         <div class="row g-3 mb-4" id="summary-cards" style="display: none;">
@@ -150,6 +190,7 @@
                                 <th class="text-dark text-end" style="padding: 12px 15px;">Ingresos</th>
                                 <th class="text-dark text-end" style="padding: 12px 15px;">Costos</th>
                                 <th class="text-dark text-end" style="padding: 12px 15px;">Gastos</th>
+                                <th class="text-dark text-end" style="padding: 12px 15px;">Otros Ingresos</th>
                                 <th class="text-dark text-end" style="padding: 12px 15px;">Otros Egresos</th>
                                 <th class="text-dark text-end" style="padding: 12px 15px;">Resultado Neto</th>
                                 <th class="text-dark text-end" style="width: 140px; padding: 12px 15px;">Margen Neto</th>

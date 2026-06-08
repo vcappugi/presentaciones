@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     initExecutiveSummary();
+    setupCategoryPills();
 });
 
 // Referencias DOM
@@ -14,6 +15,54 @@ const tableBody = document.getElementById('table-body');
 let chartDesempeno = null;
 let chartParticipacion = null;
 let chartTendencia = null;
+
+// Variables globales de datos y estado de filtrado por categoría
+let dataHistoricaGlobal = [];
+let dataPeriodoActualGlobal = [];
+let empresaCategoriasGlobal = {};
+let activeCategoryGlobal = 'TODAS';
+
+function setupCategoryPills() {
+    const pills = document.querySelectorAll('#category-pills .nav-link');
+    pills.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            pills.forEach(b => b.classList.remove('active'));
+            e.target.classList.add('active');
+            activeCategoryGlobal = e.target.getAttribute('data-category');
+            filtrarYRenderizar();
+        });
+    });
+}
+
+function filtrarYRenderizar() {
+    const periodo = localStorage.getItem('bel_periodo');
+    const dimension = localStorage.getItem('bel_dimension') || 'REAL';
+
+    // 1. Filtrar datos del periodo actual por la categoría activa
+    let datosFiltradosActual = dataPeriodoActualGlobal;
+    if (activeCategoryGlobal !== 'TODAS') {
+        datosFiltradosActual = dataPeriodoActualGlobal.filter(row => {
+            const cat = empresaCategoriasGlobal[row.empresa] || 'Sin Categoría';
+            return cat.toLowerCase() === activeCategoryGlobal.toLowerCase();
+        });
+    }
+
+    // 2. Procesar y agrupar por empresa para la categoría filtrada
+    const resumenEmpresas = procesarDatos(datosFiltradosActual);
+
+    // 3. Renderizar dashboard (Tarjetas, Tabla de Ranking y Gráficos por Empresa)
+    renderDashboard(resumenEmpresas, periodo, dimension);
+
+    // 4. Filtrar datos históricos por categoría para la tendencia
+    let datosFiltradosHistoricos = dataHistoricaGlobal;
+    if (activeCategoryGlobal !== 'TODAS') {
+        datosFiltradosHistoricos = dataHistoricaGlobal.filter(row => {
+            const cat = empresaCategoriasGlobal[row.empresa] || 'Sin Categoría';
+            return cat.toLowerCase() === activeCategoryGlobal.toLowerCase();
+        });
+    }
+    renderTrendChart(datosFiltradosHistoricos);
+}
 
 async function initExecutiveSummary() {
     // 1. Obtener parámetros de periodo y dimensión
@@ -132,14 +181,35 @@ async function consultarDatosConsolidados(periodo, dimension) {
             console.warn(`No hay registros específicos para el periodo ${periodo}`);
         }
 
-        // 3. Procesar y agrupar por empresa para el periodo seleccionado
-        const resumenEmpresas = procesarDatos(datosPeriodoActual);
+        // Obtener el mapeo de empresas y sus categorías desde Supabase
+        const resEmpresas = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/empresas`, {
+            method: 'GET',
+            headers: {
+                'apikey': CONFIG.SUPABASE_KEY,
+                'Authorization': `Bearer ${CONFIG.SUPABASE_KEY}`
+            }
+        });
+        const catMap = {};
+        if (resEmpresas.ok) {
+            const empresasData = await resEmpresas.json();
+            empresasData.forEach(e => {
+                catMap[e.nombre] = e.categoria || 'Sin Categoría';
+            });
+        }
 
-        // 4. Renderizar dashboard (Tarjetas, Tabla de Ranking y Gráficos por Empresa)
-        renderDashboard(resumenEmpresas, periodo, dimension);
+        // Almacenar en variables globales para filtrado dinámico local
+        dataHistoricaGlobal = allData;
+        dataPeriodoActualGlobal = datosPeriodoActual;
+        empresaCategoriasGlobal = catMap;
 
-        // 5. Renderizar el nuevo Gráfico de Línea de Tendencia Histórica de Ingresos (todas las empresas unificadas)
-        renderTrendChart(allData);
+        // Mostrar selector de categorías
+        const categorySelectorRow = document.getElementById('category-selector-row');
+        if (categorySelectorRow) {
+            categorySelectorRow.style.display = 'block';
+        }
+
+        // Ejecutar el filtrado y renderizado inicial
+        filtrarYRenderizar();
 
     } catch (error) {
         console.error(error);
@@ -252,6 +322,9 @@ function renderDashboard(empresas, periodo, dimension) {
     // 3. Ordenar empresas por Resultado Neto descendente para la tabla y gráficos
     empresas.sort((a, b) => b.resultadoNeto - a.resultadoNeto);
 
+    // Encontrar ingresos máximos para la barra de progreso
+    const maxIngresos = empresas.length > 0 ? Math.max(...empresas.map(emp => emp.ingresos || 0)) : 1;
+
     // 4. Generar Tabla
     if ($.fn.DataTable.isDataTable('#ranking-table')) {
         $('#ranking-table').DataTable().destroy();
@@ -272,14 +345,20 @@ function renderDashboard(empresas, periodo, dimension) {
         const margenBadgeClass = emp.margenNeto < 0 ? 'bg-danger-subtle text-danger border border-danger-subtle' : 'bg-success-subtle text-success border border-success-subtle';
 
         tr.innerHTML = `
-            <td style="padding: 12px 15px; font-weight: 600; color: var(--secondary-color); text-decoration: underline;">${emp.nombre}</td>
-            <td class="text-end" style="padding: 12px 15px;">${formatMonto(emp.ingresos)}</td>
-            <td class="text-end text-muted" style="padding: 12px 15px;">${formatMonto(emp.costos)}</td>
-            <td class="text-end text-muted" style="padding: 12px 15px;">${formatMonto(emp.gastos)}</td>
-            <td class="text-end text-muted" style="padding: 12px 15px; color: ${emp.otrosNetos < 0 ? '#ef4444' : ''} !important;">${formatMonto(emp.otrosNetos)}</td>
-            <td class="text-end fw-bold text-dark" style="padding: 12px 15px; color: ${emp.resultadoNeto < 0 ? '#ef4444' : ''} !important;">${formatMonto(emp.resultadoNeto)}</td>
+            <td style="padding: 12px 15px; font-weight: 600; color: var(--secondary-color);"><span class="company-link">${emp.nombre}</span></td>
             <td class="text-end" style="padding: 12px 15px;">
-                <span class="badge rounded-2 ${margenBadgeClass}">${margenStr}</span>
+                <div style="font-weight: 600; color: var(--text-primary); font-variant-numeric: tabular-nums;">${formatMonto(emp.ingresos)}</div>
+                <div class="progress mt-1 ms-auto" style="height: 4px; width: 85px; background-color: var(--border-color); border-radius: 2px;">
+                    <div class="progress-bar" style="width: ${maxIngresos > 0 ? Math.max(0, Math.min(100, (emp.ingresos / maxIngresos * 100))) : 0}%; background-color: var(--secondary-color); height: 100%;"></div>
+                </div>
+            </td>
+            <td class="text-end text-muted" style="padding: 12px 15px; font-variant-numeric: tabular-nums;">${formatMonto(emp.costos)}</td>
+            <td class="text-end text-muted" style="padding: 12px 15px; font-variant-numeric: tabular-nums;">${formatMonto(emp.gastos)}</td>
+            <td class="text-end text-muted" style="padding: 12px 15px; font-variant-numeric: tabular-nums;">${formatMonto(emp.otrosIngresos)}</td>
+            <td class="text-end text-muted" style="padding: 12px 15px; font-variant-numeric: tabular-nums;">${formatMonto(emp.otrosEgresos)}</td>
+            <td class="text-end fw-bold" style="padding: 12px 15px; font-variant-numeric: tabular-nums; color: ${emp.resultadoNeto < 0 ? '#dc2626' : '#16a34a'} !important; font-size: 1.05rem;">${formatMonto(emp.resultadoNeto)}</td>
+            <td class="text-end" style="padding: 12px 15px;">
+                <span class="badge rounded-2 ${margenBadgeClass}" style="padding: 6px 10px; font-weight: 600;">${margenStr}</span>
             </td>
         `;
         tableBody.appendChild(tr);
@@ -292,7 +371,7 @@ function renderDashboard(empresas, periodo, dimension) {
         language: {
             url: 'https://cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json'
         },
-        order: [[5, 'desc']], // Ordenar por la columna de Resultado Neto (columna índice 5) de forma descendente por defecto
+        order: [[6, 'desc']], // Ordenar por la columna de Resultado Neto (columna índice 6) de forma descendente por defecto
         pageLength: 10,
         lengthMenu: [5, 10, 25, 50]
     });

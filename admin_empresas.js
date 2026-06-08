@@ -76,11 +76,13 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('empresa-plan').value = empresa.plan || '';
             document.getElementById('empresa-telefono').value = empresa.telefono || '';
             document.getElementById('empresa-usuario').value = empresa.usuario || '';
+            document.getElementById('empresa-categoria').value = empresa.categoria || '';
         } else {
             modalTitle.textContent = 'Nueva Empresa';
             formEmpresa.reset();
             document.getElementById('empresa-id').value = '';
             document.getElementById('empresa-usuario').value = '';
+            document.getElementById('empresa-categoria').value = '';
         }
         modal.classList.add('active');
     }
@@ -113,7 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderTable(data) {
         if (!data || data.length === 0) {
-            tableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px;">No hay empresas registradas.</td></tr>';
+            tableBody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 20px;">No hay empresas registradas.</td></tr>';
             return;
         }
 
@@ -126,6 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td style="font-weight: 500; color: var(--primary-color);">${emp.usuario || '-'}</td>
                 <td>${emp.plan || '-'}</td>
                 <td>${emp.telefono || '-'}</td>
+                <td>${emp.categoria || '-'}</td>
                 <td>
                     <button class="btn-action btn-edit" data-empresa='${JSON.stringify(emp).replace(/'/g, "&apos;")}'>Editar</button>
                     <button class="btn-action btn-divisiones" data-nombre="${emp.nombre || ''}" style="margin-left: 5px;">Divisiones</button>
@@ -160,7 +163,8 @@ document.addEventListener('DOMContentLoaded', () => {
             mail: document.getElementById('empresa-mail').value.trim() || null,
             plan: document.getElementById('empresa-plan').value.trim() || null,
             telefono: document.getElementById('empresa-telefono').value.trim() || null,
-            usuario: document.getElementById('empresa-usuario').value || null
+            usuario: document.getElementById('empresa-usuario').value || null,
+            categoria: document.getElementById('empresa-categoria').value || null
         };
 
         btnSaveModal.disabled = true;

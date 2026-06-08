@@ -145,49 +145,56 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const header = document.getElementById('nav-gyp-group');
                     if (header) {
                         header.nextElementSibling.style.display = 'block';
-                        header.querySelector('.collapsible-icon').style.transform = 'rotate(90deg)';
+                        const icon = header.querySelector('.collapsible-icon');
+                        if (icon) icon.style.transform = 'rotate(90deg)';
                     }
                 } else if (page === 'gyp_historico.html') {
                     document.getElementById('nav-gyp-historico')?.classList.add('active');
                     const header = document.getElementById('nav-gyp-group');
                     if (header) {
                         header.nextElementSibling.style.display = 'block';
-                        header.querySelector('.collapsible-icon').style.transform = 'rotate(90deg)';
+                        const icon = header.querySelector('.collapsible-icon');
+                        if (icon) icon.style.transform = 'rotate(90deg)';
                     }
                 } else if (page === 'gyp_comparativo.html') {
                     document.getElementById('nav-gyp-comparativo')?.classList.add('active');
                     const header = document.getElementById('nav-gyp-group');
                     if (header) {
                         header.nextElementSibling.style.display = 'block';
-                        header.querySelector('.collapsible-icon').style.transform = 'rotate(90deg)';
+                        const icon = header.querySelector('.collapsible-icon');
+                        if (icon) icon.style.transform = 'rotate(90deg)';
                     }
                 } else if (page === 'ct_actual.html') {
                     document.getElementById('nav-ct')?.classList.add('active');
                     const header = document.getElementById('nav-ct-group');
                     if (header) {
                         header.nextElementSibling.style.display = 'block';
-                        header.querySelector('.collapsible-icon').style.transform = 'rotate(90deg)';
+                        const icon = header.querySelector('.collapsible-icon');
+                        if (icon) icon.style.transform = 'rotate(90deg)';
                     }
                 } else if (page === 'ct_historico.html') {
                     document.getElementById('nav-ct-historico')?.classList.add('active');
                     const header = document.getElementById('nav-ct-group');
                     if (header) {
                         header.nextElementSibling.style.display = 'block';
-                        header.querySelector('.collapsible-icon').style.transform = 'rotate(90deg)';
+                        const icon = header.querySelector('.collapsible-icon');
+                        if (icon) icon.style.transform = 'rotate(90deg)';
                     }
                 } else if (page === 'fc_actual.html') {
                     document.getElementById('nav-fc-actual')?.classList.add('active');
                     const header = document.getElementById('nav-fc-group');
                     if (header) {
                         header.nextElementSibling.style.display = 'block';
-                        header.querySelector('.collapsible-icon').style.transform = 'rotate(90deg)';
+                        const icon = header.querySelector('.collapsible-icon');
+                        if (icon) icon.style.transform = 'rotate(90deg)';
                     }
                 } else if (page === 'fc_historico.html') {
                     document.getElementById('nav-fc-historico')?.classList.add('active');
                     const header = document.getElementById('nav-fc-group');
                     if (header) {
                         header.nextElementSibling.style.display = 'block';
-                        header.querySelector('.collapsible-icon').style.transform = 'rotate(90deg)';
+                        const icon = header.querySelector('.collapsible-icon');
+                        if (icon) icon.style.transform = 'rotate(90deg)';
                     }
                 } else if (page === 'admin.html' || page === 'admin_empresas.html' || page === 'admin_plan.html' || page === 'admin_periodos.html' || page === 'admin_conceptosct.html' || page === 'admin_conceptosfc.html' || page === 'admin_ia.html' || page === 'admin_usuarios.html') {
                     document.getElementById('nav-admin')?.classList.add('active');
@@ -248,6 +255,9 @@ function initResponsiveMenu() {
         const navItems = sidebar.querySelectorAll('.nav-item');
         navItems.forEach(item => {
             item.addEventListener('click', () => {
+                if (item.classList.contains('nav-collapsible-header')) {
+                    return;
+                }
                 if (window.innerWidth <= 768) {
                     sidebar.classList.remove('open');
                     overlay.classList.remove('active');
@@ -281,14 +291,37 @@ function initCollapsibleMenu() {
     const headers = document.querySelectorAll('.nav-collapsible-header');
     headers.forEach(header => {
         header.addEventListener('click', () => {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            let wasCollapsed = false;
+
+            // Expandir la barra si estaba colapsada (Desktop o Móvil)
+            if (document.body.classList.contains('sidebar-collapsed')) {
+                document.body.classList.remove('sidebar-collapsed');
+                wasCollapsed = true;
+            }
+            if (window.innerWidth <= 768 && sidebar && !sidebar.classList.contains('open')) {
+                sidebar.classList.add('open');
+                if (overlay) overlay.classList.add('active');
+                wasCollapsed = true;
+            }
+
             const content = header.nextElementSibling;
             const icon = header.querySelector('.collapsible-icon');
-            if (content.style.display === 'none' || content.style.display === '') {
+            
+            // Si la barra estaba colapsada, forzar la apertura del submenú
+            if (wasCollapsed) {
                 content.style.display = 'block';
                 if (icon) icon.style.transform = 'rotate(90deg)';
             } else {
-                content.style.display = 'none';
-                if (icon) icon.style.transform = 'rotate(0deg)';
+                // Alternar comportamiento de apertura/cierre normal
+                if (content.style.display === 'none' || content.style.display === '') {
+                    content.style.display = 'block';
+                    if (icon) icon.style.transform = 'rotate(90deg)';
+                } else {
+                    content.style.display = 'none';
+                    if (icon) icon.style.transform = 'rotate(0deg)';
+                }
             }
         });
     });

@@ -149,7 +149,8 @@ body {
     height: 100vh;
     box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
     z-index: 10;
-    transition: transform 0.3s ease;
+    transition: width 0.3s ease, transform 0.3s ease;
+    overflow-x: hidden;
 }
 
 .sidebar-header {
@@ -208,11 +209,11 @@ body {
 
 /* Collapsed state for Desktop */
 body.sidebar-collapsed .sidebar {
-    transform: translateX(-100%);
+    width: 65px;
 }
 
 body.sidebar-collapsed .main-content {
-    margin-left: 0;
+    margin-left: 65px;
 }
 
 .top-bar {
@@ -388,19 +389,21 @@ body.sidebar-collapsed .main-content {
     }
 
     .sidebar {
-        transform: translateX(-100%);
-        transition: transform 0.3s ease;
+        width: 65px;
+        transform: translateX(0) !important;
+        transition: width 0.3s ease;
+        overflow-x: hidden;
     }
 
     .sidebar.open {
-        transform: translateX(0);
+        width: 250px;
     }
 
     .main-content {
-        margin-left: 0 !important;
+        margin-left: 65px !important;
         padding: 10px !important;
-        width: 100% !important;
-        max-width: 100vw !important;
+        width: calc(100% - 65px) !important;
+        max-width: calc(100vw - 65px) !important;
         overflow-x: hidden !important;
         box-sizing: border-box !important;
     }
@@ -492,13 +495,15 @@ body.sidebar-collapsed .main-content {
 
     /* OCULTAR COLUMNAS MENOS IMPORTANTES EN MÓVIL PARA QUE LA TABLA QUEPA AL 100% */
 
-    /* 1. Tabla de Ranking de Inicio: Ocultar Costos, Gastos y Otros Netos */
-    #table-section .data-table th:nth-child(3),
-    #table-section .data-table td:nth-child(3),
-    #table-section .data-table th:nth-child(4),
-    #table-section .data-table td:nth-child(4),
-    #table-section .data-table th:nth-child(5),
-    #table-section .data-table td:nth-child(5) {
+    /* 1. Tabla de Ranking de Inicio: Ocultar Costos, Gastos, Otros Ingresos y Otros Egresos en móviles */
+    #table-section #ranking-table th:nth-child(3),
+    #table-section #ranking-table td:nth-child(3),
+    #table-section #ranking-table th:nth-child(4),
+    #table-section #ranking-table td:nth-child(4),
+    #table-section #ranking-table th:nth-child(5),
+    #table-section #ranking-table td:nth-child(5),
+    #table-section #ranking-table th:nth-child(6),
+    #table-section #ranking-table td:nth-child(6) {
         display: none !important;
     }
 
@@ -581,6 +586,319 @@ body.sidebar-collapsed .main-content {
     color: white;
 }
 
+/* =========================================
+   Estilos Premium para la Tabla de Ranking
+   ========================================= */
+#ranking-table {
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 100% !important;
+}
+
+#ranking-table thead th {
+    background-color: var(--bg-color) !important;
+    color: var(--text-secondary) !important;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid var(--border-color) !important;
+    padding: 14px 16px;
+    transition: background-color 0.2s;
+}
+
+#ranking-table tbody td {
+    border-bottom: 1px solid var(--border-color);
+    padding: 14px 16px;
+}
+
+#ranking-table tbody tr {
+    transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+#ranking-table tbody tr:hover {
+    background-color: rgba(37, 99, 235, 0.03) !important;
+    cursor: pointer;
+}
+
+/* Efecto elegante para los nombres de empresas */
+.company-link {
+    color: var(--secondary-color);
+    font-weight: 600;
+    position: relative;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.company-link::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    transform: scaleX(0);
+    height: 2px;
+    bottom: -2px;
+    left: 0;
+    background-color: var(--secondary-color);
+    transform-origin: bottom right;
+    transition: transform 0.25s ease-out;
+}
+
+.ranking-row:hover .company-link::after {
+    transform: scaleX(1);
+    transform-origin: bottom left;
+}
+
+.ranking-row:hover .company-link {
+    color: var(--secondary-color);
+}
+
+/* Personalización de los controles de DataTables para un look premium */
+.dataTables_wrapper .dataTables_filter {
+    margin-bottom: 15px;
+    padding: 0 15px;
+}
+
+.dataTables_wrapper .dataTables_filter label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.dataTables_wrapper .dataTables_filter input {
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 6px 12px;
+    outline: none;
+    background-color: var(--surface-color);
+    color: var(--text-primary);
+    transition: border-color 0.2s, box-shadow 0.2s;
+    font-size: 0.9rem;
+    min-width: 200px;
+}
+
+.dataTables_wrapper .dataTables_filter input:focus {
+    border-color: var(--secondary-color);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.dataTables_wrapper .dataTables_length {
+    margin-bottom: 15px;
+    padding: 0 15px;
+}
+
+.dataTables_wrapper .dataTables_length label {
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.dataTables_wrapper .dataTables_length select {
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 6px 24px 6px 12px;
+    outline: none;
+    background-color: var(--surface-color);
+    color: var(--text-primary);
+    font-size: 0.9rem;
+}
+
+.dataTables_wrapper .dataTables_info {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    margin-top: 15px;
+    padding: 0 15px 15px 15px;
+}
+
+.dataTables_wrapper .dataTables_paginate {
+    margin-top: 15px;
+    padding: 0 15px 15px 15px;
+}
+
+.dataTables_wrapper .pagination .page-item .page-link {
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    background-color: var(--surface-color);
+    font-size: 0.85rem;
+    padding: 6px 12px;
+    border-radius: 6px;
+    margin: 0 2px;
+    transition: all 0.2s;
+}
+
+.dataTables_wrapper .pagination .page-item.active .page-link {
+    background-color: var(--secondary-color) !important;
+    border-color: var(--secondary-color) !important;
+    color: #ffffff !important;
+    font-weight: 600;
+}
+
+.dataTables_wrapper .pagination .page-item:hover:not(.active) .page-link {
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+}
+
+/* ==========================================================================
+   Estilos para el Sidebar en Estado Colapsado (Desktop y Móvil)
+   ========================================================================== */
+
+/* --- Escritorio Colapsado --- */
+body.sidebar-collapsed .sidebar {
+    width: 65px !important;
+}
+
+body.sidebar-collapsed .sidebar-header {
+    padding: 10px 5px !important;
+    background-color: white !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+}
+body.sidebar-collapsed .sidebar-header img {
+    max-width: 45px !important;
+    max-height: 45px !important;
+    object-fit: contain !important;
+}
+
+body.sidebar-collapsed .nav-item span,
+body.sidebar-collapsed .collapsible-icon {
+    display: none !important;
+}
+
+body.sidebar-collapsed .nav-item {
+    padding-left: 0 !important;
+    justify-content: center !important;
+    border-left-width: 0 !important;
+    padding: 15px 0 !important;
+}
+
+body.sidebar-collapsed .nav-item svg {
+    margin-right: 0 !important;
+}
+
+body.sidebar-collapsed .nav-collapsible-content {
+    display: none !important;
+}
+
+body.sidebar-collapsed .user-sidebar-section {
+    padding: 15px 0 !important;
+    align-items: center !important;
+}
+
+body.sidebar-collapsed .user-sidebar-section > div {
+    justify-content: center !important;
+    gap: 0 !important;
+}
+
+body.sidebar-collapsed #user-display-name,
+body.sidebar-collapsed #user-display-role,
+body.sidebar-collapsed .logout-text {
+    display: none !important;
+}
+
+body.sidebar-collapsed #btn-logout {
+    width: 40px !important;
+    height: 40px !important;
+    padding: 0 !important;
+    border-radius: 50% !important;
+    font-size: 1.1rem !important;
+    justify-content: center !important;
+    margin: 0 auto !important;
+    gap: 0 !important;
+}
+
+body.sidebar-collapsed .theme-selector {
+    padding: 15px 0 !important;
+}
+
+body.sidebar-collapsed .theme-selector-title {
+    display: none !important;
+}
+
+body.sidebar-collapsed .theme-buttons {
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
 
 
-
+/* --- Móvil Colapsado (Dentro de Media Query) --- */
+@media (max-width: 768px) {
+    .sidebar:not(.open) {
+        width: 65px !important;
+    }
+    
+    .sidebar:not(.open) .sidebar-header {
+        padding: 10px 5px !important;
+        background-color: white !important;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+    }
+    .sidebar:not(.open) .sidebar-header img {
+        max-width: 45px !important;
+        max-height: 45px !important;
+        object-fit: contain !important;
+    }
+    
+    .sidebar:not(.open) .nav-item span,
+    .sidebar:not(.open) .collapsible-icon {
+        display: none !important;
+    }
+    
+    .sidebar:not(.open) .nav-item {
+        padding-left: 0 !important;
+        justify-content: center !important;
+        border-left-width: 0 !important;
+        padding: 15px 0 !important;
+    }
+    
+    .sidebar:not(.open) .nav-item svg {
+        margin-right: 0 !important;
+    }
+    
+    .sidebar:not(.open) .nav-collapsible-content {
+        display: none !important;
+    }
+    
+    .sidebar:not(.open) .user-sidebar-section {
+        padding: 15px 0 !important;
+        align-items: center !important;
+    }
+    
+    .sidebar:not(.open) .user-sidebar-section > div {
+        justify-content: center !important;
+        gap: 0 !important;
+    }
+    
+    .sidebar:not(.open) #user-display-name,
+    .sidebar:not(.open) #user-display-role,
+    .sidebar:not(.open) .logout-text {
+        display: none !important;
+    }
+    
+    .sidebar:not(.open) #btn-logout {
+        width: 40px !important;
+        height: 40px !important;
+        padding: 0 !important;
+        border-radius: 50% !important;
+        font-size: 1.1rem !important;
+        justify-content: center !important;
+        margin: 0 auto !important;
+        gap: 0 !important;
+    }
+    
+    .sidebar:not(.open) .theme-selector {
+        padding: 15px 0 !important;
+    }
+    
+    .sidebar:not(.open) .theme-selector-title {
+        display: none !important;
+    }
+    
+    .sidebar:not(.open) .theme-buttons {
+        flex-direction: column !important;
+        align-items: center !important;
+        gap: 8px !important;
+    }
+}
