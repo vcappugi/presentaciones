@@ -328,7 +328,21 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
-        const sumNetoAcumulado = sumIngresosAcumulado - sumEgresosAcumulado;
+        // Calcular Saldo Inicial de cada mes de forma acumulativa
+        const saldoInicialMensual = {};
+        let currentSaldo = 0;
+        mesesOrdenados.forEach(m => {
+            saldoInicialMensual[m] = currentSaldo;
+            const flow = netosMensuales[m];
+            currentSaldo = Math.round((currentSaldo + flow + Number.EPSILON) * 100) / 100;
+        });
+
+        // Modificar netosMensuales (Flujo Neto de Caja) para incluir el saldo inicial
+        mesesOrdenados.forEach(m => {
+            netosMensuales[m] = Math.round((saldoInicialMensual[m] + netosMensuales[m] + Number.EPSILON) * 100) / 100;
+        });
+
+        const sumNetoAcumulado = Math.round((saldoInicialMensual[mesesOrdenados[0]] + sumIngresosAcumulado - sumEgresosAcumulado + Number.EPSILON) * 100) / 100;
 
         // KPI Cards
         cardIngresos.innerHTML = formatMonto(sumIngresosAcumulado, false);
@@ -367,6 +381,32 @@ document.addEventListener('DOMContentLoaded', () => {
         const sortedGroups = Object.keys(agrupado).sort((a, b) => {
             return agrupado[a].ordenGrupo - agrupado[b].ordenGrupo;
         });
+
+        // Fila Saldo inicial como primera línea de la tabla
+        let celdasMesesSaldoInicial = '';
+        mesesOrdenados.forEach((m, idx) => {
+            const isClosed = !!periodosCerrados[m.toLowerCase()];
+            const currentVal = saldoInicialMensual[m];
+            const prevVal = idx > 0 ? saldoInicialMensual[mesesOrdenados[idx - 1]] : undefined;
+            const indicator = getIndicatorHtml(currentVal, prevVal);
+            celdasMesesSaldoInicial += `<td style="text-align: right;">${formatMonto(currentVal, isClosed)} ${indicator}</td>`;
+        });
+
+        const sparklineDataSaldoInicial = mesesOrdenados.map(m => saldoInicialMensual[m]);
+        const sparklineHtmlSaldoInicial = createSparkline(sparklineDataSaldoInicial);
+
+        const trSaldoInicial = document.createElement('tr');
+        trSaldoInicial.style.backgroundColor = 'var(--row-g-bg)';
+        trSaldoInicial.style.fontWeight = 'bold';
+        trSaldoInicial.style.color = 'var(--primary-color)';
+        trSaldoInicial.innerHTML = `
+            <td style="font-size: 1.1rem; user-select: none; position: sticky; left: 0; background-color: var(--row-g-bg); z-index: 1; padding-left: 30px;">
+                Saldo inicial
+            </td>
+            ${celdasMesesSaldoInicial}
+            <td style="text-align: center; vertical-align: middle;" class="sparkline-cell" data-title="Saldo inicial" data-vals="${sparklineDataSaldoInicial.join(',')}">${sparklineHtmlSaldoInicial}</td>
+        `;
+        tableBody.appendChild(trSaldoInicial);
 
         let gIndex = 0;
         sortedGroups.forEach(gName => {

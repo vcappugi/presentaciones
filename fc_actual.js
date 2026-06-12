@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             // Petición paralela para conceptosfc y para fc
             const urlConceptos = `${CONFIG.SUPABASE_URL}/rest/v1/conceptosfc?order=orden.asc`;
-            const urlFC = `${CONFIG.SUPABASE_URL}/rest/v1/fc?empresa=eq.${encodeURIComponent(valorEmpresa)}&periodo=eq.${encodeURIComponent(valorPeriodo)}`;
+            const urlFC = `${CONFIG.SUPABASE_URL}/rest/v1/fc?empresa=eq.${encodeURIComponent(valorEmpresa)}`;
 
             const [resConceptos, resFC] = await Promise.all([
                 fetch(urlConceptos, {
@@ -109,13 +109,16 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        // Filtrar datos para el período seleccionado
+        const selectedPeriodData = fcData.filter(row => String(row.periodo || '').trim().toLowerCase() === valorPeriodo.toLowerCase());
+
         // Determinar si el periodo está cerrado
-        const isClosed = fcData.length > 0 && fcData[0].cerrado === 'Periodo Cerrado';
+        const isClosed = selectedPeriodData.length > 0 && selectedPeriodData[0].cerrado === 'Periodo Cerrado';
         thMonto.innerHTML = isClosed ? 'Monto 🔒' : 'Monto';
 
         // Indexar montos de fc por denominación
         const fcMontoMap = {};
-        fcData.forEach(row => {
+        selectedPeriodData.forEach(row => {
             const key = String(row.denominacion || '').trim().toUpperCase();
             const val = parseFloat(row.monto) || 0;
             if (!fcMontoMap[key]) {
@@ -123,6 +126,78 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             fcMontoMap[key] += val;
         });
+
+        // Calcular Saldo Anterior de forma acumulativa
+        const parsePeriodo = (p) => {
+            const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+            const parts = String(p).toLowerCase().trim().split('-');
+            if (parts.length !== 2) return 0;
+            const mesIdx = MESES.indexOf(parts[0]);
+            let year = parseInt(parts[1]);
+            if (isNaN(year)) return 0;
+            if (year < 100) year += 2000;
+            return year * 12 + mesIdx;
+        };
+
+        const getNetFlowForPeriod = (p, data, concepts) => {
+            const pData = data.filter(row => String(row.periodo || '').trim().toLowerCase() === p.toLowerCase());
+            const pMontoMap = {};
+            pData.forEach(row => {
+                const key = String(row.denominacion || '').trim().toUpperCase();
+                const val = parseFloat(row.monto) || 0;
+                if (!pMontoMap[key]) {
+                    pMontoMap[key] = 0;
+                }
+                pMontoMap[key] += val;
+            });
+
+            let totalI = 0;
+            let totalE = 0;
+
+            concepts.forEach(concept => {
+                const g = (concept.grupo || 'Otros').trim();
+                const denom = (concept.denominacion || '').trim();
+                const key = denom.toUpperCase();
+                
+                const monto = pMontoMap[key] || 0;
+                const valRounded = Math.round((monto + Number.EPSILON) * 100) / 100;
+
+                const gUpper = g.toUpperCase();
+                if (gUpper.includes('INGRESO')) {
+                    totalI += valRounded;
+                } else if (gUpper.includes('EGRESO') || gUpper.includes('INVERSION')) {
+                    totalE += valRounded;
+                }
+            });
+
+            return Math.round((totalI - totalE + Number.EPSILON) * 100) / 100;
+        };
+
+        const uniquePeriodsInDb = [...new Set(fcData.map(row => String(row.periodo || '').trim()))]
+            .filter(p => p !== '');
+        uniquePeriodsInDb.sort((a, b) => parsePeriodo(a) - parsePeriodo(b));
+
+        const selectedKey = parsePeriodo(valorPeriodo);
+        let saldoAnterior = 0;
+        uniquePeriodsInDb.forEach(p => {
+            if (parsePeriodo(p) < selectedKey) {
+                saldoAnterior += getNetFlowForPeriod(p, fcData, conceptos);
+            }
+        });
+        saldoAnterior = Math.round((saldoAnterior + Number.EPSILON) * 100) / 100;
+
+        // Fila Saldo anterior
+        const trSaldoAnterior = document.createElement('tr');
+        trSaldoAnterior.style.backgroundColor = 'var(--row-g-bg)';
+        trSaldoAnterior.style.fontWeight = 'bold';
+        trSaldoAnterior.style.color = 'var(--primary-color)';
+        trSaldoAnterior.innerHTML = `
+            <td style="font-size: 1.1rem; user-select: none; position: sticky; left: 0; background-color: var(--row-g-bg); z-index: 1; padding-left: 30px;">
+                Saldo anterior
+            </td>
+            <td style="text-align: right; font-size: 1.1rem;">${formatMonto(saldoAnterior, isClosed)}</td>
+        `;
+        tableBody.appendChild(trSaldoAnterior);
 
         // Estructura de agrupamiento ordenado
         const agrupado = {};
@@ -170,7 +245,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Redondear totales generales
         totalIngresos = Math.round((totalIngresos + Number.EPSILON) * 100) / 100;
         totalEgresos = Math.round((totalEgresos + Number.EPSILON) * 100) / 100;
-        const totalNeto = totalIngresos - totalEgresos;
+        const totalNeto = Math.round((saldoAnterior + totalIngresos - totalEgresos + Number.EPSILON) * 100) / 100;
 
         cardIngresos.innerHTML = formatMonto(totalIngresos, false);
         cardEgresos.innerHTML = formatMonto(totalEgresos, false);
