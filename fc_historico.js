@@ -174,10 +174,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             const mesesConsulta = getMonthsRange(valorPeriodo);
-            const mesesEncoded = mesesConsulta.map(m => encodeURIComponent(m)).join(',');
 
             const urlConceptos = `${CONFIG.SUPABASE_URL}/rest/v1/conceptosfc?order=orden.asc`;
-            const urlFC = `${CONFIG.SUPABASE_URL}/rest/v1/fc?empresa=eq.${encodeURIComponent(valorEmpresa)}&periodo=in.(${mesesEncoded})`;
+            const urlFC = `${CONFIG.SUPABASE_URL}/rest/v1/fc?empresa=eq.${encodeURIComponent(valorEmpresa)}`;
 
             const [resConceptos, resFC] = await Promise.all([
                 fetch(urlConceptos, {
@@ -328,9 +327,66 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
+        const parsePeriodo = (p) => {
+            const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+            const parts = String(p).toLowerCase().trim().split('-');
+            if (parts.length !== 2) return 0;
+            const mesIdx = MESES.indexOf(parts[0]);
+            let year = parseInt(parts[1]);
+            if (isNaN(year)) return 0;
+            if (year < 100) year += 2000;
+            return year * 12 + mesIdx;
+        };
+
+        const getNetFlowForPeriod = (p, data, concepts) => {
+            const pData = data.filter(row => String(row.periodo || '').trim().toLowerCase() === p.toLowerCase());
+            const pMontoMap = {};
+            pData.forEach(row => {
+                const key = String(row.denominacion || '').trim().toUpperCase();
+                const val = parseFloat(row.monto) || 0;
+                if (!pMontoMap[key]) {
+                    pMontoMap[key] = 0;
+                }
+                pMontoMap[key] += val;
+            });
+
+            let totalI = 0;
+            let totalE = 0;
+
+            concepts.forEach(concept => {
+                const g = (concept.grupo || 'Otros').trim();
+                const denom = (concept.denominacion || '').trim();
+                const key = denom.toUpperCase();
+                
+                const monto = pMontoMap[key] || 0;
+                const valRounded = Math.round((monto + Number.EPSILON) * 100) / 100;
+
+                const gUpper = g.toUpperCase();
+                if (gUpper.includes('INGRESO')) {
+                    totalI += valRounded;
+                } else if (gUpper.includes('EGRESO') || gUpper.includes('INVERSION')) {
+                    totalE += valRounded;
+                }
+            });
+
+            return Math.round((totalI - totalE + Number.EPSILON) * 100) / 100;
+        };
+
         // Calcular Saldo Inicial de cada mes de forma acumulativa
+        const firstMonth = mesesOrdenados[0];
+        const firstMonthKey = parsePeriodo(firstMonth);
+
+        const uniquePeriodsInDb = [...new Set(fcData.map(row => String(row.periodo || '').trim()))]
+            .filter(p => p !== '' && parsePeriodo(p) < firstMonthKey);
+
+        let saldoAnterior = 0;
+        uniquePeriodsInDb.forEach(p => {
+            saldoAnterior += getNetFlowForPeriod(p, fcData, conceptos);
+        });
+        saldoAnterior = Math.round((saldoAnterior + Number.EPSILON) * 100) / 100;
+
         const saldoInicialMensual = {};
-        let currentSaldo = 0;
+        let currentSaldo = saldoAnterior;
         mesesOrdenados.forEach(m => {
             saldoInicialMensual[m] = currentSaldo;
             const flow = netosMensuales[m];
