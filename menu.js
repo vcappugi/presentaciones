@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const isReportPage = [
         'empresa_divisiones.html', 'empresa1.html', 'gyp_historico.html', 
         'gyp_comparativo.html', 'ct_actual.html', 'ct_historico.html', 
-        'fc_actual.html', 'fc_historico.html'
+        'fc_actual.html', 'fc_historico.html', 'indicadores.html'
     ].includes(page);
 
     if (isReportPage) {
@@ -196,6 +196,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                         const icon = header.querySelector('.collapsible-icon');
                         if (icon) icon.style.transform = 'rotate(90deg)';
                     }
+                } else if (page === 'indicadores.html') {
+                    document.getElementById('nav-indicadores')?.classList.add('active');
                 } else if (page === 'admin.html' || page === 'admin_empresas.html' || page === 'admin_plan.html' || page === 'admin_periodos.html' || page === 'admin_conceptosct.html' || page === 'admin_conceptosfc.html' || page === 'admin_ia.html' || page === 'admin_usuarios.html') {
                     document.getElementById('nav-admin')?.classList.add('active');
                 }
