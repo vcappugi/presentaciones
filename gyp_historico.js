@@ -29,6 +29,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const loadingEl = document.getElementById('loading');
     const tableBody = document.getElementById('table-body');
 
+    // Configurar botón de impresión
+    const btnImprimir = document.getElementById('btn-imprimir');
+    if (btnImprimir) {
+        btnImprimir.addEventListener('click', () => {
+            window.print();
+        });
+    }
+
     // Validar que existan los parámetros
     if (!valorEmpresa || !valorPeriodo || !valorDimension) {
         errorEl.textContent = 'Faltan parámetros de filtro. Por favor, ingresa desde el inicio para seleccionarlos.';
@@ -40,6 +48,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // Actualizar títulos en la interfaz
     if (tituloEmpresa) tituloEmpresa.textContent = valorEmpresa;
     if (tituloPeriodo) tituloPeriodo.textContent = `${valorPeriodo} (${valorDimension})`;
+
+    // Actualizar títulos en la interfaz de impresión (Cabecera de reporte impreso)
+    const printEmpresa = document.getElementById('print-empresa');
+    const printPeriodo = document.getElementById('print-periodo');
+    const printDimension = document.getElementById('print-dimension');
+    if (printEmpresa) printEmpresa.textContent = valorEmpresa || '-';
+    if (printPeriodo) printPeriodo.textContent = valorPeriodo || '-';
+    if (printDimension) printDimension.textContent = valorDimension || '-';
 
     // 2. Construir la URL de consulta a Supabase
     // Determinar la lista de meses desde Enero hasta el mes seleccionado
@@ -179,6 +195,17 @@ function renderTable(data, mesesOrdenados, divisionSelected = 'all', divisiones 
     
     tableBody.innerHTML = '';
     tableHeader.innerHTML = '';
+
+    // Actualizar metadata de división en la cabecera de impresión
+    const printDivisionEl = document.getElementById('print-division');
+    if (printDivisionEl) {
+        if (divisionSelected === 'all') {
+            printDivisionEl.textContent = 'Consolidado';
+        } else {
+            const found = divisiones.find(d => d.columna === divisionSelected);
+            printDivisionEl.textContent = found ? found.division : divisionSelected;
+        }
+    }
     
     if (!data || data.length === 0) {
         tableBody.innerHTML = '<tr><td colspan="100%" style="text-align: center; padding: 20px; color: #6b7280;">No hay datos disponibles para esta empresa y periodo.</td></tr>';
@@ -409,6 +436,7 @@ function renderTable(data, mesesOrdenados, divisionSelected = 'all', divisiones 
             }
         });
     };
+    window.updateVisibility = updateVisibility;
 
     // Helper para filas colapsables
     const makeCollapsible = (tr, nodeId) => {
@@ -1056,3 +1084,51 @@ window.openSparklineModal = function(titleEnc, dataEnc) {
         }
     });
 };
+
+// Variables para almacenar las filas colapsadas antes de la impresión
+let collapsedRowsBeforePrint = [];
+
+// Evento que se ejecuta antes de abrir el diálogo de impresión
+window.addEventListener('beforeprint', () => {
+    const tableBody = document.getElementById('table-body');
+    if (!tableBody) return;
+    
+    const rows = tableBody.querySelectorAll('tr');
+    collapsedRowsBeforePrint = [];
+    
+    rows.forEach(r => {
+        // Guardar las filas que estaban colapsadas
+        if (r.classList.contains('collapsed')) {
+            collapsedRowsBeforePrint.push(r);
+            r.classList.remove('collapsed');
+            
+            // Cambiar el ícono indicador a desplegado
+            const icon = r.querySelector('.toggle-icon');
+            if (icon) {
+                icon.textContent = '▼';
+            }
+        }
+    });
+    
+    // Asegurar que todas las filas (incluidas las hijas de los nodos expandidos) sean visibles
+    rows.forEach(r => {
+        r.style.display = '';
+    });
+});
+
+// Evento que se ejecuta después de cerrar o imprimir el reporte
+window.addEventListener('afterprint', () => {
+    // Restaurar el estado colapsado original
+    collapsedRowsBeforePrint.forEach(r => {
+        r.classList.add('collapsed');
+        const icon = r.querySelector('.toggle-icon');
+        if (icon) {
+            icon.textContent = '▶';
+        }
+    });
+    
+    // Re-evaluar la visibilidad del árbol usando la función global expuesta
+    if (typeof window.updateVisibility === 'function') {
+        window.updateVisibility();
+    }
+});

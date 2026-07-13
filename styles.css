@@ -902,3 +902,130 @@ body.sidebar-collapsed .theme-buttons {
         gap: 8px !important;
     }
 }
+
+/* ==========================================
+   Estilos de Impresión (Reporte Horizontal)
+   ========================================== */
+@media print {
+    /* Forzar orientación horizontal y márgenes */
+    @page {
+        size: landscape;
+        margin: 1.5cm 1cm 1.5cm 1cm;
+    }
+
+    /* Ocultar elementos no deseados */
+    .sidebar,
+    .top-bar,
+    .summary-cards,
+    .no-print,
+    #sparkline-modal,
+    button,
+    select {
+        display: none !important;
+    }
+
+    /* Ocultar la cabecera del gráfico histórico si no se oculta por no-print */
+    section.no-print {
+        display: none !important;
+    }
+
+    /* Ajustar contenedor principal */
+    body {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+        display: block !important;
+    }
+    
+    .main-content {
+        margin-left: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        background-color: #ffffff !important;
+    }
+
+    /* Ocultar elementos dentro de la cabecera de impresión */
+    .print-header-info {
+        display: block !important;
+        margin-bottom: 20px !important;
+        border-bottom: 2px solid var(--primary-color) !important;
+        padding-bottom: 10px !important;
+    }
+
+    .print-meta-info {
+        display: flex !important;
+        gap: 20px !important;
+        margin-top: 5px !important;
+        font-size: 0.95rem !important;
+    }
+
+    /* Ajustes del panel de datos */
+    .dashboard-panel {
+        background: transparent !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        border: none !important;
+    }
+
+    .panel-header {
+        border-bottom: 2px solid var(--primary-color) !important;
+        margin-bottom: 15px !important;
+        padding-bottom: 10px !important;
+    }
+
+    /* Ajustes de la tabla de reporte */
+    .table-container {
+        overflow: visible !important;
+        width: 100% !important;
+    }
+
+    .data-table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        font-size: 0.85rem !important; /* Reducir fuente para que quepa en landscape */
+    }
+
+    /* Asegurar que se impriman los colores de fondo de las filas */
+    tr {
+        page-break-inside: avoid !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    th, td {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        position: static !important; /* Desactivar sticky columns */
+        background-color: transparent;
+        border: 1px solid #e5e7eb !important;
+        padding: 6px 8px !important;
+    }
+
+    /* Colores específicos de fila para impresión */
+    tr[style*="var(--row-g-bg)"] {
+        background-color: #e2e8f0 !important;
+    }
+    tr[style*="var(--row-sg2-bg)"] {
+        background-color: #f1f5f9 !important;
+    }
+    tr[style*="var(--row-sg-bg)"] {
+        background-color: #f8fafc !important;
+    }
+    tr[style*="#f0fdf4"] {
+        background-color: #f0fdf4 !important;
+    }
+    tr[style*="#dcfce7"] {
+        background-color: #dcfce7 !important;
+    }
+
+    /* Ocultar los minigráficos (sparklines) de tendencia en el reporte impreso */
+    .data-table td:nth-last-child(3),
+    .data-table th:nth-last-child(3) {
+        display: none !important;
+    }
+}
+
+/* Ocultar cabecera de impresión en vista de pantalla */
+.print-header-info {
+    display: none;
+}
