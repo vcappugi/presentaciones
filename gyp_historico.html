@@ -89,11 +89,52 @@
                 </table>
             </div>
         </section>
+        
+        <!-- Modal de Selección de Formato de Reporte -->
+        <div id="print-format-modal" class="modal-backdrop-custom no-print" style="display: none;">
+            <div class="modal-card-custom">
+                <div class="modal-header-custom">
+                    <h4>Exportar Reporte</h4>
+                    <button id="btn-close-format-modal" class="btn-close-custom">&times;</button>
+                </div>
+                <div class="modal-body-custom">
+                    <p>Seleccione el formato en el que desea exportar el reporte:</p>
+                    <div class="format-options">
+                        <button id="btn-export-pdf" class="format-btn pdf-btn">
+                            <div class="format-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi fill-current" viewBox="0 0 16 16">
+                                  <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1"/>
+                                  <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1"/>
+                                </svg>
+                            </div>
+                            <div class="format-info">
+                                <span class="format-title">Imprimir / PDF</span>
+                                <span class="format-desc">Genera el reporte optimizado en formato horizontal para impresión o guardado como PDF.</span>
+                            </div>
+                        </button>
+
+                        <button id="btn-export-excel" class="format-btn excel-btn">
+                            <div class="format-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi fill-current" viewBox="0 0 16 16">
+                                  <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2M9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5z"/>
+                                  <path d="M5.18 4.616a.5.5 0 0 1 .704.03L8 7.219l2.116-2.573a.5.5 0 1 1 .768.64L8.651 8l2.233 2.714a.5.5 0 1 1-.768.64L8 8.781l-2.116 2.573a.5.5 0 1 1-.768-.64L7.349 8 5.116 5.286a.5.5 0 0 1 .064-.67z"/>
+                                </svg>
+                            </div>
+                            <div class="format-info">
+                                <span class="format-title">Documento Excel</span>
+                                <span class="format-desc">Exporta todos los datos del reporte directamente a una hoja de cálculo estructurada (.xlsx).</span>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </main>
 
     <!-- Configuración y Lógica de la Aplicación -->
     <script src="config.js"></script>
     <script src="filtros.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="gyp_historico.js"></script>
 </body>
 </html>

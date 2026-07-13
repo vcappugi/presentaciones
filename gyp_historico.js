@@ -29,11 +29,44 @@ document.addEventListener('DOMContentLoaded', () => {
     const loadingEl = document.getElementById('loading');
     const tableBody = document.getElementById('table-body');
 
-    // Configurar botón de impresión
+    // Configurar botón de impresión y su modal de formato
     const btnImprimir = document.getElementById('btn-imprimir');
-    if (btnImprimir) {
-        btnImprimir.addEventListener('click', () => {
+    const formatModal = document.getElementById('print-format-modal');
+    const btnCloseModal = document.getElementById('btn-close-format-modal');
+    const btnExportPdf = document.getElementById('btn-export-pdf');
+    const btnExportExcel = document.getElementById('btn-export-excel');
+
+    if (btnImprimir && formatModal) {
+        btnImprimir.addEventListener('click', (e) => {
+            e.preventDefault();
+            formatModal.style.display = 'flex';
+        });
+    }
+
+    if (btnCloseModal && formatModal) {
+        btnCloseModal.addEventListener('click', () => {
+            formatModal.style.display = 'none';
+        });
+        
+        // Cerrar al hacer clic fuera de la tarjeta del modal
+        formatModal.addEventListener('click', (e) => {
+            if (e.target === formatModal) {
+                formatModal.style.display = 'none';
+            }
+        });
+    }
+
+    if (btnExportPdf && formatModal) {
+        btnExportPdf.addEventListener('click', () => {
+            formatModal.style.display = 'none';
             window.print();
+        });
+    }
+
+    if (btnExportExcel && formatModal) {
+        btnExportExcel.addEventListener('click', () => {
+            formatModal.style.display = 'none';
+            exportToExcel();
         });
     }
 
@@ -1132,3 +1165,48 @@ window.addEventListener('afterprint', () => {
         window.updateVisibility();
     }
 });
+
+// Función para exportar la tabla G y P a formato Excel (.xlsx)
+function exportToExcel() {
+    const tableEl = document.querySelector('.data-table');
+    if (!tableEl) {
+        alert('Error: No se encontró la tabla de datos para exportar.');
+        return;
+    }
+
+    // Clonar la tabla para no alterar la visual en pantalla
+    const clonedTable = tableEl.cloneNode(true);
+
+    // Remover los elementos de íconos de colapso para dejar texto limpio en las celdas
+    clonedTable.querySelectorAll('.toggle-icon').forEach(icon => icon.remove());
+
+    // Encontrar y remover la columna de TENDENCIA (Sparklines) que no aporta al Excel
+    const headerRow = clonedTable.querySelector('thead tr');
+    if (headerRow) {
+        const thList = Array.from(headerRow.querySelectorAll('th'));
+        const indexTendencia = thList.findIndex(th => th.textContent.includes('TENDENCIA'));
+        if (indexTendencia !== -1) {
+            thList[indexTendencia].remove();
+            
+            const bodyRows = clonedTable.querySelectorAll('tbody tr');
+            bodyRows.forEach(row => {
+                const tdList = Array.from(row.querySelectorAll('td'));
+                if (tdList[indexTendencia]) {
+                    tdList[indexTendencia].remove();
+                }
+            });
+        }
+    }
+
+    // Convertir la tabla clonada a libro de Excel
+    const wb = XLSX.utils.table_to_book(clonedTable, { sheet: "Histórico GyP" });
+    
+    // Obtener los parámetros de filtros para generar un nombre de archivo descriptivo
+    const urlParams = new URLSearchParams(window.location.search);
+    const empresa = urlParams.get('empresa') || localStorage.getItem('bel_empresa') || 'Reporte';
+    const periodo = urlParams.get('periodo') || localStorage.getItem('bel_periodo') || 'Historico';
+    const filename = `Reporte_GyP_${empresa.replace(/[^a-z0-9]/gi, '_')}_${periodo}.xlsx`;
+
+    // Descargar el archivo
+    XLSX.writeFile(wb, filename);
+}
