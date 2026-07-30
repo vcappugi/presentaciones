@@ -27,7 +27,7 @@ window.getAllowedCompanies = async function() {
     }
     
     try {
-        const response = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/empresas?usuario=eq.${encodeURIComponent(userObj.nickname)}`, {
+        const response = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/empresas?or=(usuario.eq.${encodeURIComponent(userObj.nickname)},administrador.ilike.${encodeURIComponent(userObj.nombre)})`, {
             method: 'GET',
             headers: {
                 'apikey': CONFIG.SUPABASE_KEY,
