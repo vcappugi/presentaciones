@@ -990,6 +990,14 @@ window.loadActividadDetalles = async function(eventId) {
 };
 
 window.saveActividadDetalle = async function(eventId) {
+    const loggedUser = sessionStorage.getItem('loggedUser') || localStorage.getItem('loggedUser');
+    const userObj = loggedUser ? JSON.parse(loggedUser) : null;
+    const isAdmin = userObj && userObj.rol === 'admin';
+    if (!isAdmin) {
+        alert("Acceso denegado: Solo los administradores pueden registrar detalles.");
+        return;
+    }
+
     const inputEl = document.getElementById(`input-new-detalle-${eventId}`);
     const dateTimeEl = document.getElementById(`input-date-time-${eventId}`);
     const checkboxEl = document.getElementById(`input-checkbox-modified-${eventId}`);
@@ -1177,6 +1185,11 @@ function showToastNotice(msg) {
 
 // Funciones globales para crear, editar y eliminar actividades (CRUD de Actividades)
 window.openNuevaActividadModal = function() {
+    const loggedUser = sessionStorage.getItem('loggedUser') || localStorage.getItem('loggedUser');
+    const userObj = loggedUser ? JSON.parse(loggedUser) : null;
+    const isAdmin = userObj && userObj.rol === 'admin';
+    if (!isAdmin) return;
+
     document.getElementById('actividad-modal-title').textContent = "Nueva Actividad";
     document.getElementById('form-actividad-id').value = "";
     document.getElementById('form-actividad').reset();
@@ -1205,6 +1218,11 @@ window.openNuevaActividadModal = function() {
 };
 
 window.openEditarActividadModal = function(eventId) {
+    const loggedUser = sessionStorage.getItem('loggedUser') || localStorage.getItem('loggedUser');
+    const userObj = loggedUser ? JSON.parse(loggedUser) : null;
+    const isAdmin = userObj && userObj.rol === 'admin';
+    if (!isAdmin) return;
+
     const event = allEvents.find(e => String(e.id) === String(eventId));
     if (!event) return;
     
@@ -1239,6 +1257,14 @@ window.closeActividadModal = function() {
 };
 
 window.saveActividad = async function() {
+    const loggedUser = sessionStorage.getItem('loggedUser') || localStorage.getItem('loggedUser');
+    const userObj = loggedUser ? JSON.parse(loggedUser) : null;
+    const isAdmin = userObj && userObj.rol === 'admin';
+    if (!isAdmin) {
+        alert("Acceso denegado: Solo los administradores pueden crear o modificar actividades.");
+        return;
+    }
+
     const id = document.getElementById('form-actividad-id').value;
     const fecha = document.getElementById('form-actividad-fecha').value;
     const hora = document.getElementById('form-actividad-hora').value;
@@ -1353,6 +1379,14 @@ window.saveActividad = async function() {
 };
 
 window.eliminarActividad = async function(eventId) {
+    const loggedUser = sessionStorage.getItem('loggedUser') || localStorage.getItem('loggedUser');
+    const userObj = loggedUser ? JSON.parse(loggedUser) : null;
+    const isAdmin = userObj && userObj.rol === 'admin';
+    if (!isAdmin) {
+        alert("Acceso denegado: Solo los administradores pueden eliminar actividades.");
+        return;
+    }
+
     // 1. Validar que la actividad no tenga detalles en detalle_actividad
     // Consultar detalles remotos
     let dbDetails = [];
