@@ -54,6 +54,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const sessionString = JSON.stringify(sessionData);
 
+                // Limpiar caché previa de empresas permitidas
+                sessionStorage.removeItem('allowedCompanies');
+                localStorage.removeItem('allowedCompanies');
+
                 if (rememberMeCheckbox.checked) {
                     localStorage.setItem('loggedUser', sessionString);
                 } else {
