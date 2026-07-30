@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Calendario de Presentación - Dashboard Corporativo</title>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Estilos CSS (incluye Bootstrap 5 importado al inicio) -->
+    <link rel="stylesheet" href="styles.css?v=1.1">
+    <script src="menu.js"></script>
+    <style>
+        /* Estilos del Calendario */
+        .calendar-card {
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+            overflow: hidden;
+            padding: 24px;
+            margin-bottom: 30px;
+        }
+
+        .calendar-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-nav-month {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-nav-month:hover {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .select-calendar {
+            background-color: var(--surface-color);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .select-calendar:focus {
+            border-color: var(--primary-color);
+        }
+
+        /* Grid de Calendario */
+        .calendar-wrapper {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .calendar-grid-header {
+            display: grid;
+            grid-template-columns: repeat(7, minmax(100px, 1fr));
+            background-color: var(--bg-color);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            text-align: center;
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+        }
+
+        .calendar-grid-header > div {
+            padding: 12px 6px;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, minmax(100px, 1fr));
+            gap: 8px;
+            min-height: 500px;
+        }
+
+        .calendar-day-cell {
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            min-height: 110px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .calendar-day-cell:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.05);
+            background-color: var(--bg-color);
+        }
+
+        .calendar-day-cell.today {
+            border: 2px solid var(--primary-color);
+            background-color: rgba(74, 160, 68, 0.03);
+        }
+
+        .calendar-day-cell.other-month {
+            opacity: 0.4;
+        }
+
+        .day-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .day-num {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .day-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            display: none;
+        }
+
+        .calendar-day-cell.has-events .day-indicator {
+            display: block;
+        }
+
+        .day-events-list {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            flex-grow: 1;
+            overflow-y: auto;
+            max-height: 120px;
+            scrollbar-width: thin;
+        }
+
+        .day-events-list::-webkit-scrollbar {
+            width: 3px;
+        }
+        .day-events-list::-webkit-scrollbar-thumb {
+            background-color: var(--border-color);
+            border-radius: 3px;
+        }
+
+        .day-event-pill {
+            font-size: 0.72rem;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            line-height: 1.2;
+            transition: transform 0.1s;
+        }
+
+        .day-event-pill:hover {
+            transform: scale(1.03);
+        }
+
+        /* Buscador y Filtros */
+        .filter-panel {
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-item {
+            flex: 1;
+            min-width: 200px;
+            position: relative;
+        }
+
+        .filter-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        .input-search {
+            width: 100%;
+            background-color: var(--surface-color);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .input-search:focus {
+            border-color: var(--primary-color);
+        }
+
+        /* Modal Premium Customizado */
+        .modal-custom {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-custom.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content-custom {
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            width: 90%;
+            max-width: 550px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            transform: scale(0.95);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            max-height: 85vh;
+        }
+
+        .modal-custom.active .modal-content-custom {
+            transform: scale(1);
+        }
+
+        .modal-header-custom {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--bg-color);
+        }
+
+        .modal-header-custom h4 {
+            margin: 0;
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: var(--text-primary);
+        }
+
+        .btn-close-custom {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            line-height: 1;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: color 0.2s;
+            padding: 5px;
+        }
+
+        .btn-close-custom:hover {
+            color: var(--text-primary);
+        }
+
+        .modal-body-custom {
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        /* Lista de actividades en el modal */
+        .modal-event-item {
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            transition: background-color 0.2s;
+        }
+
+        .modal-event-item:hover {
+            background-color: var(--bg-color);
+        }
+
+        .event-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .company-badge-large {
+            font-size: 0.8rem;
+            font-weight: 700;
+            padding: 6px 12px;
+            border-radius: 8px;
+            text-transform: uppercase;
+        }
+
+        .event-desc {
+            font-size: 0.95rem;
+            color: var(--text-primary);
+            line-height: 1.5;
+            font-weight: 500;
+            word-break: break-word;
+        }
+
+        .no-events-message {
+            text-align: center;
+            padding: 30px;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .calendar-grid-header {
+                grid-template-columns: repeat(7, minmax(40px, 1fr));
+                font-size: 0.75rem;
+            }
+            .calendar-grid-header > div {
+                padding: 8px 2px;
+            }
+            .calendar-grid {
+                grid-template-columns: repeat(7, minmax(40px, 1fr));
+                gap: 4px;
+                min-height: 350px;
+            }
+            .calendar-day-cell {
+                min-height: 70px;
+                padding: 6px;
+                border-radius: 8px;
+            }
+            .day-num {
+                font-size: 0.85rem;
+            }
+            .day-events-list {
+                display: none; /* Ocultar nombres de eventos en móvil */
+            }
+            .day-indicator {
+                width: 6px;
+                height: 6px;
+                margin-top: 4px;
+            }
+            .calendar-day-cell.has-events {
+                background-color: rgba(74, 160, 68, 0.05);
+            }
+            .calendar-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .control-group {
+                justify-content: space-between;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Menú Lateral / Sidebar -->
+    <aside class="sidebar" id="sidebar-container"></aside>
+
+    <!-- Contenido Principal -->
+    <main class="main-content">
+        <!-- Barra Superior -->
+        <header class="top-bar d-flex flex-wrap justify-content-between align-items-center mb-4 pb-3 border-bottom">
+            <h1 class="page-title h3 fw-bold mb-0 text-dark">
+                Calendario de Presentación
+                <span class="fs-6 text-muted font-monospace fw-normal" id="calendar-subtitle">Agenda Mensual</span>
+            </h1>
+            <button id="btn-nueva-actividad" class="btn btn-sm btn-success" style="display: none; font-weight: 700; background-color: var(--primary-color); border-color: var(--primary-color); padding: 8px 16px; border-radius: 8px;">
+                + Nueva Actividad
+            </button>
+        </header>
+
+        <!-- Mensajes de Estado -->
+        <div id="loading" class="alert alert-info text-center" role="alert">
+            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            Cargando calendario y actividades desde Supabase...
+        </div>
+        <div id="error-message" class="alert alert-danger hidden" role="alert"></div>
+
+        <!-- Panel de Filtros -->
+        <div class="filter-panel shadow-sm">
+            <div class="filter-item">
+                <span class="filter-label">Buscar Actividad</span>
+                <input type="text" id="search-activity" class="input-search" placeholder="Escribe para buscar...">
+            </div>
+            <div class="filter-item">
+                <span class="filter-label">Filtrar por Empresa</span>
+                <select id="filter-company" class="select-calendar w-100" style="padding: 8px 12px; font-size: 0.9rem;">
+                    <option value="">Todas las Empresas</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Tarjeta Principal del Calendario -->
+        <div class="calendar-card shadow-sm">
+            <!-- Controles del Mes -->
+            <div class="calendar-controls">
+                <div class="control-group">
+                    <button id="btn-prev-month" class="btn-nav-month">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"/>
+                        </svg>
+                        Anterior
+                    </button>
+                    <button id="btn-next-month" class="btn-nav-month">
+                        Siguiente
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="control-group">
+                    <select id="select-month" class="select-calendar"></select>
+                    <select id="select-year" class="select-calendar"></select>
+                </div>
+            </div>
+
+            <!-- Retícula -->
+            <div class="calendar-wrapper">
+                <div class="calendar-grid-header">
+                    <div>Lun</div>
+                    <div>Mar</div>
+                    <div>Mié</div>
+                    <div>Jue</div>
+                    <div>Vie</div>
+                    <div>Sáb</div>
+                    <div>Dom</div>
+                </div>
+                <div id="calendar-grid-body" class="calendar-grid">
+                    <!-- Casillas generadas por calendario.js -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Detalle del Día -->
+    <div id="day-detail-modal" class="modal-custom">
+        <div class="modal-content-custom shadow">
+            <div class="modal-header-custom">
+                <h4 id="modal-date-title">Actividades del Día</h4>
+                <button id="btn-close-modal" class="btn-close-custom">&times;</button>
+            </div>
+            <div class="modal-body-custom" id="modal-events-container">
+                <!-- Eventos generados dinámicamente -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Formulario de Actividad (Crear / Editar) -->
+    <div id="actividad-form-modal" class="modal-custom">
+        <div class="modal-content-custom shadow">
+            <div class="modal-header-custom">
+                <h4 id="actividad-modal-title">Nueva Actividad</h4>
+                <button id="btn-close-actividad-modal" class="btn-close-custom">&times;</button>
+            </div>
+            <form id="form-actividad">
+                <div class="modal-body-custom" style="gap: 12px;">
+                    <input type="hidden" id="form-actividad-id">
+                    
+                    <div style="display: flex; flex-direction: column;">
+                        <span class="filter-label">Fecha</span>
+                        <input type="date" id="form-actividad-fecha" class="input-search" required>
+                    </div>
+                    
+                    <div style="display: flex; flex-direction: column;">
+                        <span class="filter-label">Hora</span>
+                        <input type="time" id="form-actividad-hora" class="input-search" required>
+                    </div>
+                    
+                    <div style="display: flex; flex-direction: column;">
+                        <span class="filter-label">Empresa</span>
+                        <select id="form-actividad-empresa" class="select-calendar w-100" style="padding: 8px 12px; font-size: 0.9rem;" required>
+                            <!-- Llenado dinámicamente -->
+                        </select>
+                    </div>
+                    
+                    <div style="display: flex; flex-direction: column;">
+                        <span class="filter-label">Descripción de la Actividad</span>
+                        <textarea id="form-actividad-descripcion" class="input-search" placeholder="Escribe la descripción..." style="height: 80px; resize: none; font-family: inherit; font-size: 0.9rem;" required></textarea>
+                    </div>
+                    
+                    <div style="display: flex; gap: 20px; align-items: center; margin-top: 5px;">
+                        <label style="font-size: 0.85rem; color: var(--text-primary); display: flex; align-items: center; gap: 6px; cursor: pointer; font-weight: 600; user-select: none;">
+                            <input type="checkbox" id="form-actividad-entregado" style="width: 16px; height: 16px; cursor: pointer; accent-color: var(--primary-color);"> Entregado
+                        </label>
+                        <label style="font-size: 0.85rem; color: var(--text-primary); display: flex; align-items: center; gap: 6px; cursor: pointer; font-weight: 600; user-select: none;">
+                            <input type="checkbox" id="form-actividad-modificado" style="width: 16px; height: 16px; cursor: pointer; accent-color: var(--primary-color);"> Modificado
+                        </label>
+                    </div>
+                </div>
+                <div style="padding: 15px 20px; border-top: 1px solid var(--border-color); background-color: var(--bg-color); display: flex; justify-content: flex-end; gap: 10px;">
+                    <button type="button" id="btn-cancel-actividad-modal" class="btn-nav-month" style="padding: 8px 16px;">Cancelar</button>
+                    <button type="submit" class="btn-nav-month" style="background-color: var(--primary-color); color: white; border-color: var(--primary-color); padding: 8px 20px; border-radius: 8px;">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle via CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Configuración y Lógica de la Aplicación -->
+    <script src="config.js?v=1.1"></script>
+    <script src="calendario.js?v=1.1"></script>
+</body>
+</html>

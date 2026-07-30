@@ -198,6 +198,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     }
                 } else if (page === 'indicadores.html') {
                     document.getElementById('nav-indicadores')?.classList.add('active');
+                } else if (page === 'calendario.html') {
+                    document.getElementById('nav-calendario')?.classList.add('active');
                 } else if (page === 'admin.html' || page === 'admin_empresas.html' || page === 'admin_plan.html' || page === 'admin_periodos.html' || page === 'admin_conceptosct.html' || page === 'admin_conceptosfc.html' || page === 'admin_ia.html' || page === 'admin_usuarios.html') {
                     document.getElementById('nav-admin')?.classList.add('active');
                 }
