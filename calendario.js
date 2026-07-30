@@ -844,8 +844,10 @@ function getSemaforoColor(event) {
         const delDateOnlyObj = new Date(deliveryDateStr);
         const delDateStr = delDateOnlyObj.toISOString().slice(0, 10);
         
-        if (delDateStr <= eventDateStr) {
+        if (delDateStr < eventDateStr) {
             return 'green';
+        } else if (delDateStr === eventDateStr) {
+            return 'yellow';
         } else {
             return 'red';
         }
