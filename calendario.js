@@ -234,7 +234,6 @@ async function loadInitialData() {
         if (allEvents.length === 0) {
             console.log("Supabase 'calendario' table is empty. Loading premium mock events...");
             allEvents = generateMockEvents();
-            showDemoNotice();
         }
 
         filteredEvents = [...allEvents];
@@ -417,39 +416,6 @@ function generateMockEvents() {
         if (!companyName) return true;
         return allowedCompaniesList === null || allowedCompaniesList.includes(companyName);
     });
-}
-
-// Muestra una notificación sobre el modo demostración en la parte superior
-function showDemoNotice() {
-    if (document.getElementById("demo-notice")) return;
-
-    const mainContent = document.querySelector(".main-content");
-    const notice = document.createElement("div");
-    notice.id = "demo-notice";
-    notice.className = "alert alert-warning alert-dismissible fade show d-flex align-items-center justify-content-between mb-4 shadow-sm border-0 border-start border-warning border-4";
-    notice.setAttribute("role", "alert");
-    notice.style.backgroundColor = "var(--surface-color)";
-    notice.style.color = "var(--text-primary)";
-    notice.style.borderLeftWidth = "4px";
-    notice.style.borderLeftStyle = "solid";
-    notice.style.borderLeftColor = "var(--accent-color)";
-    
-    notice.innerHTML = `
-        <div style="display: flex; align-items: center; gap: 10px;">
-            <svg style="width: 24px; height: 24px; color: var(--accent-color); flex-shrink: 0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-            <div>
-                <strong>Modo Demostración:</strong> La tabla <code>calendario</code> en Supabase está vacía. Se han generado actividades de prueba, incluyendo un día con actividades para todas las empresas.
-            </div>
-        </div>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" style="position: relative; top: 0; right: 0; padding: 0.5rem;"></button>
-    `;
-
-    const topBar = document.querySelector(".top-bar");
-    if (topBar && topBar.nextSibling) {
-        mainContent.insertBefore(notice, topBar.nextSibling);
-    } else {
-        mainContent.prepend(notice);
-    }
 }
 
 // Filtrar eventos localmente según búsqueda de texto y empresa elegida
