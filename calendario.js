@@ -886,7 +886,7 @@ function renderSemaforoBadge(event) {
     
     return `<span style="background: ${bg}; color: ${text}; border: ${border}; padding: 4px 8px; border-radius: 6px; font-weight: 600; display: flex; align-items: center; gap: 6px;">
         <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background-color: ${dotBg}; border: ${dotBorder};"></span>
-        Semáforo: ${label}
+        ${label}
     </span>`;
 }
 
