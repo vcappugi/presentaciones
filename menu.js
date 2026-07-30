@@ -105,6 +105,29 @@ document.addEventListener('DOMContentLoaded', async () => {
                     avatarEl.textContent = firstChar;
                 }
 
+                // Mostrar empresas asignadas
+                const companiesEl = document.getElementById('user-display-companies');
+                if (companiesEl) {
+                    if (userObj.rol === 'admin') {
+                        companiesEl.textContent = 'todas las empresas';
+                        companiesEl.title = 'Todas las empresas';
+                    } else {
+                        window.getAllowedCompanies().then(allowed => {
+                            if (allowed && allowed.length > 0) {
+                                const companiesText = allowed.join(', ');
+                                companiesEl.textContent = companiesText;
+                                companiesEl.title = companiesText;
+                            } else {
+                                companiesEl.textContent = 'Sin empresas asignadas';
+                                companiesEl.title = 'Sin empresas asignadas';
+                            }
+                        }).catch(err => {
+                            console.error('Error al cargar empresas del sidebar:', err);
+                            companiesEl.textContent = 'Error al cargar';
+                        });
+                    }
+                }
+
                 // Ocultar sección de administración si no es admin
                 if (userObj.rol !== 'admin') {
                     const adminLink = document.getElementById('nav-admin-link');

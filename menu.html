@@ -97,9 +97,10 @@
 <div class="user-sidebar-section" style="padding: 20px 15px; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 10px; display: flex; flex-direction: column; gap: 10px;">
     <div style="display: flex; align-items: center; gap: 10px;">
         <div style="background-color: var(--primary-color); border: 1.5px solid rgba(255,255,255,0.2); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 1.1rem; flex-shrink: 0;" id="user-display-avatar">U</div>
-        <div style="display: flex; flex-direction: column; overflow: hidden; justify-content: center;">
+        <div style="display: flex; flex-direction: column; overflow: hidden; justify-content: center; flex: 1; min-width: 0;">
             <span id="user-display-name" style="font-weight: 600; font-size: 0.9rem; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.2;">Cargando...</span>
             <span id="user-display-role" style="font-size: 0.75rem; color: rgba(255,255,255,0.5); text-transform: uppercase; font-weight: 500; line-height: 1.2;">Rol</span>
+            <span id="user-display-companies" style="font-size: 0.72rem; color: rgba(255,255,255,0.4); font-weight: 500; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px;" title="Empresas">Cargando empresas...</span>
         </div>
     </div>
     <button id="btn-logout" style="width: 100%; height: 35px; display: flex; align-items: center; justify-content: center; gap: 8px; background: rgba(239, 68, 68, 0.12); color: #f87171; border: 1.5px solid rgba(239, 68, 68, 0.25); font-weight: 600; font-size: 0.85rem; border-radius: 8px; cursor: pointer; transition: all 0.2s ease;">
