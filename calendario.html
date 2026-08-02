@@ -441,6 +441,12 @@
                     <option value="">Todas las Empresas</option>
                 </select>
             </div>
+            <div class="filter-item">
+                <span class="filter-label">Filtrar por Categoría</span>
+                <select id="filter-category" class="select-calendar w-100" style="padding: 8px 12px; font-size: 0.9rem;">
+                    <option value="">Todas las Categorías</option>
+                </select>
+            </div>
         </div>
 
         <!-- Tarjeta Principal del Calendario -->
@@ -522,6 +528,13 @@
                     <div style="display: flex; flex-direction: column;">
                         <span class="filter-label">Empresa</span>
                         <select id="form-actividad-empresa" class="select-calendar w-100" style="padding: 8px 12px; font-size: 0.9rem;" required>
+                            <!-- Llenado dinámicamente -->
+                        </select>
+                    </div>
+                    
+                    <div style="display: flex; flex-direction: column;">
+                        <span class="filter-label">Categoría de Actividad</span>
+                        <select id="form-actividad-categoria" class="select-calendar w-100" style="padding: 8px 12px; font-size: 0.9rem;">
                             <!-- Llenado dinámicamente -->
                         </select>
                     </div>

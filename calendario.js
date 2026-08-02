@@ -5,6 +5,7 @@ let allEvents = []; // Todos los eventos cargados
 let filteredEvents = []; // Eventos filtrados localmente
 let companies = []; // Lista de todas las empresas
 let allowedCompaniesList = null; // Lista de empresas permitidas para el usuario (null = todas/admin)
+let categories = []; // Lista de todas las categorías de actividad
 
 const MONTHS_ES = [
     "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
@@ -91,6 +92,10 @@ function initUI() {
     // Escuchar filtros locales
     document.getElementById("search-activity").addEventListener("input", filterEventsLocally);
     document.getElementById("filter-company").addEventListener("change", filterEventsLocally);
+    const filterCategorySelect = document.getElementById("filter-category");
+    if (filterCategorySelect) {
+        filterCategorySelect.addEventListener("change", filterEventsLocally);
+    }
 
     // Escuchar cierre de modal
     document.getElementById("btn-close-modal").addEventListener("click", closeModal);
@@ -170,9 +175,33 @@ async function loadInitialData() {
             }
         });
 
+        // 2b. Obtener todas las categorías de actividad activas
+        try {
+            const resCategories = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/categor%C3%ADa_actividad?active=eq.true&order=description.asc`, { headers });
+            if (resCategories.ok) {
+                categories = await resCategories.json();
+            } else {
+                console.warn("No se pudieron cargar las categorías de actividad.");
+            }
+        } catch (catErr) {
+            console.error("Error al cargar categorías de actividad:", catErr);
+        }
+
+        // Llenar selector de categorías para filtros
+        const filterCategorySelectOption = document.getElementById("filter-category");
+        if (filterCategorySelectOption) {
+            filterCategorySelectOption.innerHTML = '<option value="">Todas las Categorías</option>';
+            categories.forEach(cat => {
+                const opt = document.createElement("option");
+                opt.value = cat.id;
+                opt.textContent = cat.description;
+                filterCategorySelectOption.appendChild(opt);
+            });
+        }
+
         // 3. Obtener eventos (calendario)
-        // Usamos embedding para traer detalles de la empresa y la bitácora de una sola vez
-        const resEvents = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/calendario?select=id,fecha,description,delivered,modified,hora,empresas(id,nombre,categoria),detalle_actividad(id,description,created_at)&order=fecha.asc`, { headers });
+        // Usamos embedding para traer detalles de la empresa, categoría de actividad y la bitácora de una sola vez
+        const resEvents = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/calendario?select=id,fecha,description,delivered,modified,hora,categoria_actividad_id,categor%C3%ADa_actividad(id,description),empresas(id,nombre,categoria),detalle_actividad(id,description,created_at)&order=fecha.asc`, { headers });
         if (!resEvents.ok) throw new Error("No se pudieron cargar las actividades del calendario.");
         const rawEvents = await resEvents.json();
 
@@ -198,11 +227,18 @@ async function loadInitialData() {
                 event.fecha = mod.fecha !== undefined ? mod.fecha : event.fecha;
                 event.delivered = mod.delivered !== undefined ? mod.delivered : event.delivered;
                 event.modified = mod.modified !== undefined ? mod.modified : event.modified;
+                event.categoria_actividad_id = mod.categoria_actividad_id !== undefined ? mod.categoria_actividad_id : event.categoria_actividad_id;
                 if (mod.empresa_id) {
                     const comp = companies.find(c => String(c.id) === String(mod.empresa_id));
                     if (comp) {
                         event.empresas = { id: comp.id, nombre: comp.nombre, categoria: comp.categoria };
                     }
+                }
+                if (event.categoria_actividad_id) {
+                    const catObj = categories.find(c => String(c.id) === String(event.categoria_actividad_id));
+                    event.categoría_actividad = catObj ? { id: catObj.id, description: catObj.description } : null;
+                } else {
+                    event.categoría_actividad = null;
                 }
             }
         });
@@ -418,10 +454,11 @@ function generateMockEvents() {
     });
 }
 
-// Filtrar eventos localmente según búsqueda de texto y empresa elegida
+// Filtrar eventos localmente según búsqueda de texto, empresa y categoría elegida
 function filterEventsLocally() {
     const searchText = document.getElementById("search-activity").value.toLowerCase().trim();
     const filterCompanyId = document.getElementById("filter-company").value;
+    const filterCategoryId = document.getElementById("filter-category") ? document.getElementById("filter-category").value : "";
 
     filteredEvents = allEvents.filter(event => {
         // Filtro de empresa
@@ -432,11 +469,20 @@ function filterEventsLocally() {
             }
         }
 
-        // Filtro de texto (búsqueda en la descripción o en el nombre de la empresa)
+        // Filtro de categoría
+        if (filterCategoryId) {
+            const categoryId = event.categoria_actividad_id;
+            if (String(categoryId) !== String(filterCategoryId)) {
+                return false;
+            }
+        }
+
+        // Filtro de texto (búsqueda en la descripción, nombre de la empresa, o categoría de actividad)
         if (searchText) {
             const description = (event.description || "").toLowerCase();
             const companyName = event.empresas ? (event.empresas.nombre || "").toLowerCase() : "";
-            if (!description.includes(searchText) && !companyName.includes(searchText)) {
+            const categoryName = event.categoría_actividad ? (event.categoría_actividad.description || "").toLowerCase() : "";
+            if (!description.includes(searchText) && !companyName.includes(searchText) && !categoryName.includes(searchText)) {
                 return false;
             }
         }
@@ -653,14 +699,21 @@ function openDayDetail(dateKey, dayNum, month, year, dayEvents) {
             const companyName = event.empresas ? event.empresas.nombre : "Actividad General";
             const colors = getCompanyColor(companyName);
 
+            const categoryName = event.categoría_actividad ? event.categoría_actividad.description : '';
+
             item.innerHTML = `
-                <div class="event-meta">
+                <div class="event-meta" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                     <span class="company-badge-large" style="background-color: ${colors.bg}; color: ${colors.text}; border: 1.5px solid ${colors.border};">
                         ${companyName}
                     </span>
                     <span style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 500;">
                         ${event.empresas && event.empresas.categoria ? event.empresas.categoria : ''}
                     </span>
+                    ${categoryName ? `
+                    <span class="category-badge" style="background-color: rgba(59, 130, 246, 0.1); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.2); padding: 4px 8px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
+                        🏷️ ${categoryName}
+                    </span>
+                    ` : ''}
                 </div>
                 <div class="event-desc">
                     ${event.description || 'Sin descripción'}
@@ -1149,6 +1202,22 @@ function showToastNotice(msg) {
     }, 3000);
 }
 
+// Helper to populate category activity dropdown
+function populateCategoriesSelect(selectedId = null) {
+    const categorySelect = document.getElementById('form-actividad-categoria');
+    if (!categorySelect) return;
+    categorySelect.innerHTML = '<option value="">-- Sin Categoría --</option>';
+    categories.forEach(cat => {
+        const opt = document.createElement("option");
+        opt.value = cat.id;
+        opt.textContent = cat.description;
+        if (selectedId && String(cat.id) === String(selectedId)) {
+            opt.selected = true;
+        }
+        categorySelect.appendChild(opt);
+    });
+}
+
 // Funciones globales para crear, editar y eliminar actividades (CRUD de Actividades)
 window.openNuevaActividadModal = function() {
     const loggedUser = sessionStorage.getItem('loggedUser') || localStorage.getItem('loggedUser');
@@ -1179,6 +1248,9 @@ window.openNuevaActividadModal = function() {
             companySelect.appendChild(opt);
         }
     });
+    
+    // Llenar selector de categorías
+    populateCategoriesSelect();
     
     document.getElementById('actividad-form-modal').classList.add('active');
 };
@@ -1215,6 +1287,9 @@ window.openEditarActividadModal = function(eventId) {
         }
     });
     
+    // Llenar selector de categorías y preseleccionar la correcta
+    populateCategoriesSelect(event.categoria_actividad_id);
+    
     document.getElementById('actividad-form-modal').classList.add('active');
 };
 
@@ -1238,6 +1313,7 @@ window.saveActividad = async function() {
     const description = document.getElementById('form-actividad-descripcion').value.trim();
     const delivered = document.getElementById('form-actividad-entregado').checked;
     const modified = document.getElementById('form-actividad-modificado').checked;
+    const categoriaActividadId = document.getElementById('form-actividad-categoria').value;
     
     if (!fecha || !hora || !empresaId || !description) {
         alert("Por favor rellena todos los campos.");
@@ -1245,6 +1321,7 @@ window.saveActividad = async function() {
     }
     
     const company = companies.find(c => String(c.id) === String(empresaId));
+    const catIdParsed = categoriaActividadId ? parseInt(categoriaActividadId) : null;
     
     const activityData = {
         fecha,
@@ -1252,7 +1329,8 @@ window.saveActividad = async function() {
         empresa_id: parseInt(empresaId),
         description,
         delivered,
-        modified
+        modified,
+        categoria_actividad_id: catIdParsed
     };
     
     let success = false;
@@ -1282,10 +1360,12 @@ window.saveActividad = async function() {
             // Guardar localmente fallback
             const localCreated = JSON.parse(localStorage.getItem('local_created_events') || "[]");
             const newId = 20000 + Date.now();
+            const catObj = categories.find(c => String(c.id) === String(catIdParsed));
             const newLocalEvent = {
                 id: newId,
                 ...activityData,
                 empresas: company ? { id: company.id, nombre: company.nombre, categoria: company.categoria } : null,
+                categoría_actividad: catObj ? { id: catObj.id, description: catObj.description } : null,
                 isLocal: true
             };
             localCreated.push(newLocalEvent);
@@ -1318,10 +1398,12 @@ window.saveActividad = async function() {
             const localCreated = JSON.parse(localStorage.getItem('local_created_events') || "[]");
             const idx = localCreated.findIndex(e => String(e.id) === String(id));
             if (idx !== -1) {
+                const catObj = categories.find(c => String(c.id) === String(catIdParsed));
                 localCreated[idx] = {
                     ...localCreated[idx],
                     ...activityData,
-                    empresas: company ? { id: company.id, nombre: company.nombre, categoria: company.categoria } : null
+                    empresas: company ? { id: company.id, nombre: company.nombre, categoria: company.categoria } : null,
+                    categoría_actividad: catObj ? { id: catObj.id, description: catObj.description } : null
                 };
                 localStorage.setItem('local_created_events', JSON.stringify(localCreated));
             }
