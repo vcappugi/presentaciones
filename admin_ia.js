@@ -17,11 +17,11 @@ const dbStatusBadge = document.getElementById('db-status-badge');
 let geminiApiKey = '';
 let dbContextString = '';
 let conversationHistory = []; // Almacena el hilo conversacional
-let activeModel = 'gemini-1.5-flash'; // Modelo por defecto
+let activeModel = 'gemini-2.0-flash'; // Modelo por defecto
 
 // Resuelve dinámicamente qué modelo está disponible para la clave API provista
 async function resolveActiveModel(apiKey) {
-    if (!apiKey) return 'gemini-1.5-flash';
+    if (!apiKey) return 'gemini-2.0-flash';
     try {
         const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`;
         const response = await fetch(url);
@@ -41,10 +41,10 @@ async function resolveActiveModel(apiKey) {
             
             // Prioridad de selección descendente según optimización y vigencia
             const priorities = [
+                'gemini-2.0-flash',
+                'gemini-2.5-flash',
                 'gemini-1.5-flash',
                 'gemini-1.5-flash-8b',
-                'gemini-2.5-flash',
-                'gemini-2.0-flash',
                 'gemini-2.0-flash-exp',
                 'gemini-1.5-pro',
                 'gemini-pro'

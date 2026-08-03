@@ -6,5 +6,6 @@ const CONFIG = {
     SUPABASE_KEY: 'sb_publishable_4S8Oo1xAFmERyA7MmklcgQ_uD-R4CEZ',
 
     // Clave API por defecto para Google Gemini
-    GEMINI_API_KEY: 'AIzaSyAA9bppANSjWEVBN66KXJvAjRx_gsC2UpE'
+    //GEMINI_API_KEY: 'AIzaSyAA9bppANSjWEVBN66KXJvAjRx_gsC2UpE'
+    GEMINI_API_KEY: 'xxya1Bse8nz5nJ_FLQJVLIgg2diZyiglzh5A' 
 };
